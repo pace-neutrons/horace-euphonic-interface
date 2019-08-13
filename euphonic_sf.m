@@ -1,4 +1,4 @@
-function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
+function [w, sf] = euphonic_sf (qh, qk, ql, pars, seedname, scattering_lengths, opts)
 % Calls Python package Euphonic to calculate the neutron scattering intensity
 % for each branch at each specified q-point. Euphonic reads an output from a
 % modelling code which contains the force constants matrix (e.g. a .castep_bin
@@ -17,9 +17,11 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
 %   model              String containing modelling software that you want to run. Valid values:
 %                          * 'CASTEP'
 %   seedname           String containing seedname e.g. If using CASTEP and seedname = 'ZnO', the 'ZnO.castep_bin' file will be read
+%   scattering_lengths Structure containing scattering lengths for each ion type in fm e.g. , struct('O', 5.803)
+%
 %   opts               Other arguments
-%                          scattering_lengths    Structure containing scattering lengths for each ion type in fm
-%                                                e.g. , struct('O', 5.803)
+%                          model                 String defining the atomistic modelling code. Default: 'CASTEP'
+%                              * 'CASTEP'
 %                          conversion_mat        3 x 3 matrix for converting hkl in the lattice used in Horace
 %                                                to hkl in the lattice used in the simulation code
 %                          dw_grid               Length 3 vector specifying the grid on which to calculate the
@@ -33,6 +35,7 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
 %                                                By default no acoustic sum rule is applied. Valid values:
 %                              * 'realspace'     Applies the sum rule to the real space force constants matrix
 %                              * 'reciprocal'    Applies the sum rule to the dynamical matrix at each q
+%                                                Default: None
 %                          eta_scale             Float that changes the cutoff in real/reciprocal space for the
 %                                                dipole Ewald sum. A higher value uses more reciprocal terms.
 %                                                This can be tuned for optimal performance
@@ -40,8 +43,7 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
 %                         clear                  Whether to clear persistent data and reread .castep_bin file and do all
 %                                                calculations from scratch. Otherwise the data read from .castep_bin
 %                                                is saved for reuse to avoid repeating one time calculations
-%                                                (e.g. Acoustic sum rule
-%                                                correction)
+%                                                (e.g. Acoustic sum rule correction)
 %                                                Default: false
 %                         lim                    Upper limit on the per-branch structure factors. Used to avoid smearing
 %                                                of high intensity Bragg peaks when using Gaussian broadening
@@ -60,15 +62,14 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
 
     % Set default options
     ops = struct('model', 'CASTEP', ...
-                     'scattering_lengths', struct([]), ...
-                     'conversion_mat', string(missing), ...
-                     'dw_grid', string(missing), ...
-                     'dipole', true, ...
-                     'splitting', true, ...
-                     'asr', string(missing), ...
-                     'eta_scale', 1.0, ...
-                     'clear', false, ...
-                     'lim', inf);
+                 'conversion_mat', string(missing), ...
+                 'dw_grid', string(missing), ...
+                 'dipole', true, ...
+                 'splitting', true, ...
+                 'asr', string(missing), ...
+                 'eta_scale', 1.0, ...
+                 'clear', false, ...
+                 'lim', inf);
     op_names = fieldnames(ops);
     
     n_args = length(opts);
@@ -91,11 +92,6 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
         end
     end
 
-    if length(fieldnames(ops.scattering_lengths)) == 0
-        error(['Scattering_lengths is required but has not been set: a' ...
-               'dictionary containing the scattering lengths for each ion type in fm\n']);
-    end
-
     if ops.clear
         data = [];
     end
@@ -115,11 +111,11 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
         fprintf('Using Euphonic to interpolate for q-points %d:%d out of %d\n', qi, qf, n_qpts)
         if ~isempty(data) && data.seedname == seedname
             output = py.euphonic_sf.calculate_sf_cont(data, qh_py(:,qi:qf), qk_py(:,qi:qf), ql_py(:,qi:qf), ...
-                ops.scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ops.asr, ops.dipole, ...
+                scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ops.asr, ops.dipole, ...
                 ops.splitting, ops.eta_scale);
         else
             output = py.euphonic_sf.calculate_sf(seedname, qh_py(:,qi:qf), qk_py(:,qi:qf), ql_py(:,qi:qf), ...
-                ops.scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ops.asr, ops.dipole, ...
+                scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ops.asr, ops.dipole, ...
                 ops.splitting, ops.eta_scale);
             data = output{"data"};
         end
