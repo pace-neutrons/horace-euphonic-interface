@@ -25,11 +25,9 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
 %                          dw_grid               Length 3 vector specifying the grid on which to calculate the
 %                                                Debye-Waller factor e.g. [6, 6, 6] If dw_grid is not supplied,
 %                                                the Debye-Waller factor will not be calculated
-%                          bool_opts             Options when applying the phonon interpolation and structure
-%                                                factor calculations. e.g. struct('dipole', false). Valid keys:
-%                              * 'dipole'        Whether to apply the dipole tail correction to the dynamical
+%                          dipole                Whether to apply the dipole tail correction to the dynamical
 %                                                matrix. Default: true
-%                              * 'splitting'     Whether to calculate the LO-TO splitting at the gamma points.
+%                          splitting             Whether to calculate the LO-TO splitting at the gamma points.
 %                                                Default: true
 %                          asr                   String specifying which form of the acoustic sum rule to apply.
 %                                                By default no acoustic sum rule is applied. Valid values:
@@ -39,10 +37,15 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
 %                                                dipole Ewald sum. A higher value uses more reciprocal terms.
 %                                                This can be tuned for optimal performance
 %                                                Default: 1.0
-%                         '--clear'              Clear persistent data and reread .castep_bin file and do all
+%                         clear                  Whether to clear persistent data and reread .castep_bin file and do all
 %                                                calculations from scratch. Otherwise the data read from .castep_bin
 %                                                is saved for reuse to avoid repeating one time calculations
-%                                                (e.g. Acoustic sum rule correction)
+%                                                (e.g. Acoustic sum rule
+%                                                correction)
+%                                                Default: false
+%                         lim                    Upper limit on the per-branch structure factors. Used to avoid smearing
+%                                                of high intensity Bragg peaks when using Gaussian broadening
+%                                                Default: inf
 % Output:
 % -------
 %   w                  Array of energies for the dispersion
@@ -54,66 +57,47 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
 
     T = pars(1);
     scale = pars(2);
-    
-    % Set defaults
-    scattering_lengths = struct([]);
-    % string(missing) automatically gets converted to Python's None
-    conversion_mat = string(missing);
-    dw_grid = string(missing);
-    asr = string(missing);
-    dipole = true;
-    splitting = true;
-    eta_scale = 1.0;
 
-    % Set opts
-    for i = 1:length(opts)
-        opt = opts{i};
-        if isstruct(opt)
-            % Set boolean options
-            if any(isfield(opt, {'dipole','splitting'}))
-                fields = fieldnames(opt);
-                for j = 1:length(fields)
-                    switch fields{j}
-                        case 'dipole'
-                            dipole = opt.dipole;
-                        case 'splitting'
-                            splitting = opt.splitting;
-                        otherwise
-                            disp(['Boolean field ' fields{j} ' not recognised\n']);
-                    end
-                end
-            % Set scattering lengths
-            else
-                scattering_lengths = opt;
-            end
-        elseif ~ischar(opt) && numel(opt) > 1
-            % Set matrix options
-            % Set dw_grid
-            if numel(opt) == 3
-                dw_grid = uint8(opt);
-            % Set conv_matrix
-            elseif numel(opt) == 9
-                conversion_mat = reshape(opt, 1, 9);
-            end
-        elseif isfloat(opt)
-            % Set eta_scale
-            eta_scale = opt;
+    % Set default options
+    ops = struct('model', 'CASTEP', ...
+                     'scattering_lengths', struct([]), ...
+                     'conversion_mat', string(missing), ...
+                     'dw_grid', string(missing), ...
+                     'dipole', true, ...
+                     'splitting', true, ...
+                     'asr', string(missing), ...
+                     'eta_scale', 1.0, ...
+                     'clear', false, ...
+                     'lim', inf);
+    op_names = fieldnames(ops);
+    
+    n_args = length(opts);
+    if round(n_args/2)~=n_args/2
+        error('euphonic_sf needs name/value pairs')
+    end
+
+    % Set options
+    for pair = reshape(opts,2,[])
+        name = lower(pair{1}); % make case insensitive
+        if strcmp(name, 'dw_grid')
+            ops.(name) = uint8(pair{2});
+        elseif strcmp(name, 'conversion_mat')
+            ops.(name) = reshape(pair{2}, 1, 9);
+        % Set other options
+        elseif any(strcmp(name,op_names))
+            ops.(name) = pair{2};
         else
-            % Set any remaining string options
-            switch opt
-                case '--clear'
-                    data = [];
-                case 'realspace'
-                    asr = 'realspace';
-                case 'reciprocal'
-                    asr = 'reciprocal';
-            end
+            error('%s is not a recognized parameter name',name);
         end
     end
 
-    if length(fieldnames(scattering_lengths)) == 0
+    if length(fieldnames(ops.scattering_lengths)) == 0
         error(['Scattering_lengths is required but has not been set: a' ...
                'dictionary containing the scattering lengths for each ion type in fm\n']);
+    end
+
+    if ops.clear
+        data = [];
     end
 
     qh_py = reshape(qh, 1, numel(qh));
@@ -131,10 +115,12 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
         fprintf('Using Euphonic to interpolate for q-points %d:%d out of %d\n', qi, qf, n_qpts)
         if ~isempty(data) && data.seedname == seedname
             output = py.euphonic_sf.calculate_sf_cont(data, qh_py(:,qi:qf), qk_py(:,qi:qf), ql_py(:,qi:qf), ...
-                scattering_lengths, dw_grid, conversion_mat, T, scale, asr, dipole, splitting, eta_scale);
+                ops.scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ops.asr, ops.dipole, ...
+                ops.splitting, ops.eta_scale);
         else
             output = py.euphonic_sf.calculate_sf(seedname, qh_py(:,qi:qf), qk_py(:,qi:qf), ql_py(:,qi:qf), ...
-                scattering_lengths, dw_grid, conversion_mat, T, scale, asr, dipole, splitting, eta_scale);
+                ops.scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ops.asr, ops.dipole, ...
+                ops.splitting, ops.eta_scale);
             data = output{"data"};
         end
         w_mat = vertcat(w_mat, ...
@@ -142,6 +128,10 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, model, seedname, opts)
         sf_mat = vertcat(sf_mat, ...
                          reshape(double(py.array.array('d',py.numpy.nditer(output{"sf"}))), output{"sf"}.size/n, n)');
     end
+
+    % Limit max structure factor value
+    sf_mat = min(sf_mat, ops.lim);
+
     w = num2cell(w_mat, 1);
     sf = num2cell(sf_mat, 1);
 
