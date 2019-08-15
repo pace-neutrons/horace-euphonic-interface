@@ -40,12 +40,18 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, seedname, scattering_lengths, 
 %                                                dipole Ewald sum. A higher value uses more reciprocal terms.
 %                                                This can be tuned for optimal performance
 %                                                Default: 1.0
-%                         clear                  Whether to clear persistent data and reread .castep_bin file and do all
+%                          nprocs                Number of processes to use when calculating phonons with Python
+%                                                multiprocessing
+%                                                Default: 1
+%                          clear                 Whether to clear persistent data and reread .castep_bin file and do all
 %                                                calculations from scratch. Otherwise the data read from .castep_bin
 %                                                is saved for reuse to avoid repeating one time calculations
 %                                                (e.g. Acoustic sum rule correction)
 %                                                Default: false
-%                         lim                    Upper limit on the per-branch structure factors. Used to avoid smearing
+%                          chunk                 How many q-points at a time to send to Euphonic, used to avoid potential
+%                                                memory errors and feedback on progress
+%                                                Default: 1000
+%                          lim                    Upper limit on the per-branch structure factors. Used to avoid smearing
 %                                                of high intensity Bragg peaks when using Gaussian broadening
 %                                                Default: inf
 % Output:
@@ -68,7 +74,9 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, seedname, scattering_lengths, 
                  'splitting', true, ...
                  'asr', string(missing), ...
                  'eta_scale', 1.0, ...
+                 'nprocs', uint8(1), ...
                  'clear', false, ...
+                 'chunk', 1000, ...
                  'lim', inf);
     op_names = fieldnames(ops);
     
@@ -80,7 +88,7 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, seedname, scattering_lengths, 
     % Set options
     for pair = reshape(opts,2,[])
         name = lower(pair{1}); % make case insensitive
-        if strcmp(name, 'dw_grid')
+        if strcmp(name, 'dw_grid') || strcmp(name, 'nprocs')
             ops.(name) = uint8(pair{2});
         elseif strcmp(name, 'conversion_mat')
             ops.(name) = reshape(pair{2}, 1, 9);
@@ -103,20 +111,19 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, seedname, scattering_lengths, 
     w_mat = [];
     sf_mat = [];
     % Calculate in chunks to avoid memory errors
-    chunk = 1000;
-    for i=1:ceil(n_qpts/chunk)
-        qi = (i-1)*chunk + 1;
-        qf = min(i*chunk, n_qpts);
+    for i=1:ceil(n_qpts/ops.chunk)
+        qi = (i-1)*ops.chunk + 1;
+        qf = min(i*ops.chunk, n_qpts);
         n = qf - qi + 1;
         fprintf('Using Euphonic to interpolate for q-points %d:%d out of %d\n', qi, qf, n_qpts)
         if ~isempty(data) && data.seedname == seedname
             output = py.euphonic_sf.calculate_sf_cont(data, qh_py(:,qi:qf), qk_py(:,qi:qf), ql_py(:,qi:qf), ...
                 scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ops.asr, ops.dipole, ...
-                ops.splitting, ops.eta_scale);
+                ops.splitting, ops.eta_scale, ops.nprocs);
         else
             output = py.euphonic_sf.calculate_sf(seedname, qh_py(:,qi:qf), qk_py(:,qi:qf), ql_py(:,qi:qf), ...
                 scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ops.asr, ops.dipole, ...
-                ops.splitting, ops.eta_scale);
+                ops.splitting, ops.eta_scale, ops.nprocs);
             data = output{"data"};
         end
         w_mat = vertcat(w_mat, ...
