@@ -30,20 +30,22 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, seedname, scattering_lengths, 
 %     dw_grid        Length 3 vector specifying the grid on which to calculate
 %                    the Debye-Waller factor e.g. [6, 6, 6] If dw_grid is not
 %                    supplied, the Debye-Waller factor will not be calculated
-%     dipole         Whether to apply the dipole tail correction to the
-%                    dynamical matrix. Default: true
-%     splitting      Whether to calculate the LO-TO splitting at the gamma
-%                    points. Default: true
 %     asr            String specifying which form of the acoustic sum rule to
 %                    apply, one of ('realspace', 'reciprocal'). 'realspace'
 %                    applies the sum rule to the real space force constants
 %                    matrix. 'reciprocal' applies the sum rule to the dynamical
 %                    matrix at each q. By default no acoustic sum rule is
 %                    applied
+%     dipole         Whether to apply the dipole tail correction to the
+%                    dynamical matrix. Default: true
 %     eta_scale      Float that changes the cutoff in real/reciprocal space for
 %                    the dipole Ewald sum. A higher value uses more reciprocal
 %                    terms, this can be tuned for optimal performance.
 %                    Default: 1.0
+%     splitting      Whether to calculate the LO-TO splitting at the gamma
+%                    points. Default: true
+%     reduce_qpts    Whether to use periodicity to reduce the number of
+%                    q-point calculations required
 %     nprocs         Number of processes to use when calculating phonons with
 %                    Python multiprocessing. This feature is still in
 %                    testing. Default: 1
@@ -71,37 +73,49 @@ persistent data;
 T = pars(1);
 scale = pars(2);
 
-% Set default options
+% Set default options for non-keyword arguments
+% Set Python defaults to string(missing) as this is automatically converted
+% to Python's None
 ops = struct('model', 'CASTEP', ...
              'conversion_mat', string(missing), ...
              'dw_grid', string(missing), ...
-             'dipole', true, ...
-             'splitting', true, ...
-             'asr', string(missing), ...
-             'eta_scale', 1.0, ...
-             'nprocs', uint8(1), ...
              'clear', false, ...
              'chunk', length(qh), ...
              'lim', inf);
 op_names = fieldnames(ops);
-    
+% Define keyword arguments for calculate_fine_phonons
+kwargs = {'asr', 'dipole', 'eta_scale', 'splitting', 'reduce_qpts', 'nprocs'};
+
 n_args = length(opts);
 if round(n_args/2)~=n_args/2
     error('euphonic_sf needs name/value pairs')
 end
 
 % Set options
+kw_cell = {};
 for pair = reshape(opts,2,[])
     name = lower(pair{1}); % make case insensitive
+    value = pair{2};
+
+    % Convert any arguments for Python
     if strcmp(name, 'dw_grid') || strcmp(name, 'nprocs')
-        ops.(name) = uint8(pair{2});
+        value = uint8(value);
     elseif strcmp(name, 'conversion_mat')
-        ops.(name) = reshape(pair{2}, 1, 9);
-    elseif any(strcmp(name,op_names))
-        ops.(name) = pair{2};
+        value = reshape(value, 1, 9);
+    end
+
+    % Set calculate_fine_phonons keyword arguments
+    % If the user hasn't passed a certain kwarg, it won't get passed to
+    % Python so Euphonic's default will be used
+    if any(strcmp(name, kwargs))
+        kw_cell = [kw_cell name value];
+    elseif any(strcmp(name, op_names))
+    % Set other arguments
+        ops.(name) = value;
     else
         error('%s is not a recognized parameter name',name);
     end
+
 end
 
 if ops.clear
@@ -125,12 +139,12 @@ for i=1:ceil(n_qpts/ops.chunk)
         output = py.euphonic_sf.calculate_sf_cont( ...
             data, qh_py(:,qi:qf), qk_py(:,qi:qf), ql_py(:,qi:qf), ...
             scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ...
-            ops.asr, ops.dipole, ops.splitting, ops.eta_scale, ops.nprocs);
+            pyargs(kw_cell{:}));
     else
         output = py.euphonic_sf.calculate_sf( ...
             seedname, qh_py(:,qi:qf), qk_py(:,qi:qf), ql_py(:,qi:qf), ...
             scattering_lengths, ops.dw_grid, ops.conversion_mat, T, scale, ...
-            ops.asr, ops.dipole, ops.splitting, ops.eta_scale, ops.nprocs);
+            pyargs(kw_cell{:}));
         data = output{"data"};
     end
     w_mat = vertcat( ...
