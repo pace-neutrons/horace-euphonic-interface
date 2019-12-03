@@ -9,17 +9,17 @@ end
 if nargin > 1
     euphonic_sf_path = varargin{2};
 else
-    euphonic_sf_path = 'meuphonic/python';
+    euphonic_sf_path = 'meuphonic';
 end
 
 % Must refresh cache to overwrite matlab 2018's default
 % python.internal.redirectstdout with the one in the meuphonic/matlab
 % folder if you want to use multiprocessing
-addpath('meuphonic/matlab');
+addpath([euphonic_sf_path, '/matlab'])
 rehash toolboxcache;
 
 % Add euphonic_sf.m to path
-addpath('meuphonic/matlab/euphonic');
+addpath([euphonic_sf_path, '/matlab/euphonic']);
 
 % Set number of openblas threads to 1 so it doesn't interfere with
 % multiprocessing
@@ -40,7 +40,7 @@ if ~ispc
 end
 
 % Add script to Python's path
-insert(py.sys.path,int32(0), euphonic_sf_path);
+insert(py.sys.path,int32(0), [euphonic_sf_path, '/python']);
 
 % Import euphonic.py script
 try
