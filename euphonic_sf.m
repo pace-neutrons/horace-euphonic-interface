@@ -30,50 +30,82 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, scattering_lengths, opts)
 %                    empty structure
 %     conversion_mat 3 x 3 matrix for converting hkl in the lattice used in
 %                    Horace to hkl in the lattice used in the simulation code
+%     chunk          How many q-points at a time to send to Euphonic, can be
+%                    used to avoid potential memory errors and feedback on
+%                    progress. Default: length(qh)
 % Output:
 % -------
 %   w                  Array of energies for the dispersion
 %   sf                 Array of spectral weights
 %
 %
+n_args = length(opts);
+if round(n_args/2)~=n_args/2
+    error('euphonic_sf needs name/value pairs')
+end
+
 T = pars(1);
 scale = pars(2);
+
+default_opts = {'chunk', length(qh)};
+default_opts_map = containers.Map(default_opts(:, 1), default_opts(:, 2), ...
+                                  'UniformValues', false);
 
 n_args = length(opts);
 if round(n_args/2)~=n_args/2
     error('euphonic_sf needs name/value pairs')
 end
 opts = reshape(opts,2,[]);
-opts_map = containers.Map(opts(1, :), opts(2, :));
+opts_map = containers.Map(opts(1, :), opts(2, :), 'UniformValues', false);
+opts_map = [default_opts_map; opts_map];
 
-% Read force constants
+
+
 eu = py.importlib.import_module('euphonic')
+% Read force constants
 if opts_map('model') == "CASTEP"
     model_args = opts_map('model_args');
     fc = eu.ForceConstants.from_castep(model_args{1});
 end
 
-% Convert q-points and calculate frequencies/eigenvectors
+% Convert q-points
 qpts = horzcat(qh, qk, ql);
 if isKey(opts_map, 'conversion_mat')
     conv_mat = opts_map('conversion_mat');
     qpts = qpts*conv_mat;
 end
-qpts_py = py.numpy.reshape(py.numpy.array(qpts(:).'), ...
-                           int32([length(qh), 3]), 'F');
-phonons = fc.calculate_qpoint_phonon_modes(qpts_py);
 
-% Convert scattering lengths and calculate structure factor
+% Convert scattering lengths to Pint Quantities
 ureg = eu.ureg;
 atom_types = fieldnames(scattering_lengths);
 for i = 1:length(atom_types)
     scattering_lengths.(atom_types{i}) = ...
         scattering_lengths.(atom_types{i})*ureg('fm');
 end
-sf_obj = phonons.calculate_structure_factor(scattering_lengths);
-w_py = sf_obj.frequencies.magnitude;
-sf_py = sf_obj.structure_factors.magnitude;
 
-w = num2cell(reshape(double(w_py), w_py.shape{1}, w_py.shape{2}), 1);
-sf = num2cell(reshape(double(sf_py), sf_py.shape{1}, sf_py.shape{2}), 1);
+% Calculate frequencies/eigenvectors in chunks
+w_mat = [];
+sf_mat = [];
+for i=1:ceil(length(qh)/opts_map('chunk'))
+    qi = (i-1)*opts_map('chunk') + 1;
+    qf = min(i*opts_map('chunk'), length(qh));
+    n = qf - qi + 1;
+    qpts_py = py.numpy.reshape( ...
+        py.numpy.array(reshape(qpts(qi:qf, :), [], 1)), ...
+        int32([n, 3]), 'F');
+
+    fprintf('Using Euphonic to interpolate for q-points %d:%d out of %d\n', ...
+            qi, qf, length(qh))
+    phonons = fc.calculate_qpoint_phonon_modes(qpts_py);
+    sf_obj = phonons.calculate_structure_factor(scattering_lengths);
+
+    w_py = sf_obj.frequencies.magnitude;
+    sf_py = sf_obj.structure_factors.magnitude;
+
+    w_mat = vertcat(w_mat, reshape(double(w_py), w_py.shape{1}, w_py.shape{2}));
+    sf_mat = vertcat(sf_mat, reshape(double(sf_py), sf_py.shape{1}, sf_py.shape{2}));
+end
+
+w = num2cell(w_mat, 1);
+sf = num2cell(sf_mat, 1);
 end
