@@ -32,6 +32,9 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, scattering_lengths, opts)
 %                    ForceConstants.calculate_qpoint_phonon_modes as keyword
 %                    arguments e.g. {'asr', 'reciprocal', 'use_c', true}
 %                    Default: empty cell array
+%     dw_grid        Length 3 vector specifying the grid on which to calculate
+%                    the Debye-Waller factor e.g. [6, 6, 6] If dw_grid is not
+%                    supplied, the Debye-Waller factor will not be calculated
 %     conversion_mat 3 x 3 matrix for converting hkl in the lattice used in
 %                    Horace to hkl in the lattice used in the simulation code
 %     chunk          How many q-points at a time to send to Euphonic, can be
@@ -46,33 +49,29 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, scattering_lengths, opts)
 %   sf                 Array of spectral weights
 %
 %
+temperature = pars(1);
+scale = pars(2);
+
 n_args = length(opts);
 if round(n_args/2)~=n_args/2
     error('euphonic_sf needs name/value pairs')
 end
-
-T = pars(1);
-scale = pars(2);
-
 default_opts = {'model', 'CASTEP';
                 'model_args', {};
                 'model_kwargs', {};
                 'phonon_kwargs', {};
-                'chunk', length(qh),
+                'chunk', length(qh);
                 'lim', inf};
 default_opts_map = containers.Map(default_opts(:, 1), default_opts(:, 2), ...
                                   'UniformValues', false);
-
-n_args = length(opts);
-if round(n_args/2)~=n_args/2
-    error('euphonic_sf needs name/value pairs')
-end
 opts = reshape(opts,2,[]);
 opts_map = containers.Map(opts(1, :), opts(2, :), 'UniformValues', false);
 opts_map = [default_opts_map; opts_map];
 
 
-eu = py.importlib.import_module('euphonic')
+
+eu = py.importlib.import_module('euphonic');
+ureg = eu.ureg;
 % Read force constants
 if lower(opts_map('model')) == "castep"
     model_args = opts_map('model_args');
@@ -81,23 +80,29 @@ elseif lower(opts_map('model')) == "phonopy"
     model_kwargs = opts_map('model_kwargs');
     fc = eu.ForceConstants.from_phonopy(pyargs(model_kwargs{:}));
 end
-
+% Calculate Debye-Waller
+dw = string(missing); % string(missing) converts to Python's None
+if isKey(opts_map, 'dw_grid')
+    phonon_kwargs = opts_map('phonon_kwargs');
+    dw_qpts = eu.util.mp_grid(uint32(opts_map('dw_grid')));
+    dw_phonons = fc.calculate_qpoint_phonon_modes( ...
+        dw_qpts, pyargs(phonon_kwargs{:}));
+    dw = dw_phonons.calculate_debye_waller(temperature*ureg('K'));
+    clear dw_phonons;
+end
 % Convert q-points
 qpts = horzcat(qh, qk, ql);
 if isKey(opts_map, 'conversion_mat')
     conv_mat = opts_map('conversion_mat');
     qpts = qpts*conv_mat;
 end
-
 % Convert scattering lengths to Pint Quantities
-ureg = eu.ureg;
 atom_types = fieldnames(scattering_lengths);
 for i = 1:length(atom_types)
     scattering_lengths.(atom_types{i}) = ...
         scattering_lengths.(atom_types{i})*ureg('fm');
 end
-
-% Calculate frequencies/eigenvectors in chunks
+% Calculate frequencies/eigenvectors/structure factors in chunks
 w_mat = [];
 sf_mat = [];
 for i=1:ceil(length(qh)/opts_map('chunk'))
@@ -112,7 +117,7 @@ for i=1:ceil(length(qh)/opts_map('chunk'))
             qi, qf, length(qh))
     phonon_kwargs = opts_map('phonon_kwargs');
     phonons = fc.calculate_qpoint_phonon_modes(qpts_py, pyargs(phonon_kwargs{:}));
-    sf_obj = phonons.calculate_structure_factor(scattering_lengths);
+    sf_obj = phonons.calculate_structure_factor(scattering_lengths, pyargs('dw', dw));
     w_py = sf_obj.frequencies.magnitude;
     sf_py = sf_obj.structure_factors.magnitude;
 
