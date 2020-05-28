@@ -22,12 +22,16 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, scattering_lengths, opts)
 %                    ---------------
 %     model          String defining the atomistic modelling code, one of
 %                    ('CASTEP'). Default: 'CASTEP'
-%     model_args     Structure containing ForceConstants.from_model
+%     model_args     Cell array containing ForceConstants.from_model
 %                    positional arguments. e.g if model is 'CASTEP', these
 %                    are the ForceConstants.from_castep arguments.
-%                    Default: empty structure
-%     model_kwargs   Same as above, but for keyword arguments. Default:
-%                    empty structure
+%                    Default: empty cell array
+%     model_kwargs   Same as above, but with key value pairs for keyword
+%                    arguments. Default: empty cell array
+%     phonon_kwargs  Cell array of key, value pairs that will be passed to
+%                    ForceConstants.calculate_qpoint_phonon_modes as keyword
+%                    arguments e.g. {'asr', 'reciprocal', 'use_c', true}
+%                    Default: empty cell array
 %     conversion_mat 3 x 3 matrix for converting hkl in the lattice used in
 %                    Horace to hkl in the lattice used in the simulation code
 %     chunk          How many q-points at a time to send to Euphonic, can be
@@ -47,7 +51,8 @@ end
 T = pars(1);
 scale = pars(2);
 
-default_opts = {'chunk', length(qh)};
+default_opts = {'chunk', length(qh);
+                'phonon_kwargs', {}};
 default_opts_map = containers.Map(default_opts(:, 1), default_opts(:, 2), ...
                                   'UniformValues', false);
 
@@ -58,7 +63,6 @@ end
 opts = reshape(opts,2,[]);
 opts_map = containers.Map(opts(1, :), opts(2, :), 'UniformValues', false);
 opts_map = [default_opts_map; opts_map];
-
 
 
 eu = py.importlib.import_module('euphonic')
@@ -96,7 +100,8 @@ for i=1:ceil(length(qh)/opts_map('chunk'))
 
     fprintf('Using Euphonic to interpolate for q-points %d:%d out of %d\n', ...
             qi, qf, length(qh))
-    phonons = fc.calculate_qpoint_phonon_modes(qpts_py);
+    phonon_kwargs = opts_map('phonon_kwargs');
+    phonons = fc.calculate_qpoint_phonon_modes(qpts_py, pyargs(phonon_kwargs{:}));
     sf_obj = phonons.calculate_structure_factor(scattering_lengths);
 
     w_py = sf_obj.frequencies.magnitude;
