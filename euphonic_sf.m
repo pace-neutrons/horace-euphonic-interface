@@ -51,8 +51,11 @@ end
 T = pars(1);
 scale = pars(2);
 
-default_opts = {'chunk', length(qh);
-                'phonon_kwargs', {}};
+default_opts = {'model', 'CASTEP';
+                'model_args', {};
+                'model_kwargs', {};
+                'phonon_kwargs', {};
+                'chunk', length(qh)};
 default_opts_map = containers.Map(default_opts(:, 1), default_opts(:, 2), ...
                                   'UniformValues', false);
 
@@ -67,9 +70,12 @@ opts_map = [default_opts_map; opts_map];
 
 eu = py.importlib.import_module('euphonic')
 % Read force constants
-if opts_map('model') == "CASTEP"
+if lower(opts_map('model')) == "castep"
     model_args = opts_map('model_args');
     fc = eu.ForceConstants.from_castep(model_args{1});
+elseif lower(opts_map('model')) == "phonopy"
+    model_kwargs = opts_map('model_kwargs');
+    fc = eu.ForceConstants.from_phonopy(pyargs(model_kwargs{:}));
 end
 
 % Convert q-points
@@ -103,7 +109,6 @@ for i=1:ceil(length(qh)/opts_map('chunk'))
     phonon_kwargs = opts_map('phonon_kwargs');
     phonons = fc.calculate_qpoint_phonon_modes(qpts_py, pyargs(phonon_kwargs{:}));
     sf_obj = phonons.calculate_structure_factor(scattering_lengths);
-
     w_py = sf_obj.frequencies.magnitude;
     sf_py = sf_obj.structure_factors.magnitude;
 
