@@ -37,6 +37,9 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, scattering_lengths, opts)
 %     chunk          How many q-points at a time to send to Euphonic, can be
 %                    used to avoid potential memory errors and feedback on
 %                    progress. Default: length(qh)
+%     lim            Upper limit on the per-branch structure factors. Used to
+%                    avoid smearing of high intensity Bragg peaks when using
+%                    Gaussian broadening. Default: inf
 % Output:
 % -------
 %   w                  Array of energies for the dispersion
@@ -55,7 +58,8 @@ default_opts = {'model', 'CASTEP';
                 'model_args', {};
                 'model_kwargs', {};
                 'phonon_kwargs', {};
-                'chunk', length(qh)};
+                'chunk', length(qh),
+                'lim', inf};
 default_opts_map = containers.Map(default_opts(:, 1), default_opts(:, 2), ...
                                   'UniformValues', false);
 
@@ -115,6 +119,8 @@ for i=1:ceil(length(qh)/opts_map('chunk'))
     w_mat = vertcat(w_mat, reshape(double(w_py), w_py.shape{1}, w_py.shape{2}));
     sf_mat = vertcat(sf_mat, reshape(double(sf_py), sf_py.shape{1}, sf_py.shape{2}));
 end
+% Limit max structure factor value
+sf_mat = min(sf_mat, opts_map('lim'));
 
 w = num2cell(w_mat, 1);
 sf = num2cell(sf_mat, 1);
