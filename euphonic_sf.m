@@ -2,10 +2,10 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, scattering_lengths, opts)
 % Calls Python package Euphonic to calculate the neutron scattering intensity
 % for each branch at each specified q-point. Euphonic reads an output from a
 % modelling code which contains the force constants matrix (e.g. a .castep_bin
-% file) and interpolates to find the eigenvalues and eigenvectors at the
-% requested q-points. It then calculates the scattering intensity at each
-% q-point using the one-phonon scattering function (10.23, Pg 226, Dove
-% Structure and Dynamics)
+% file) and interpolates to find the eigenvalues/eigenvectors at the
+% requested q-points, and then the inelastic neutron scattering intensities.
+% For more details on the method, see the Euphonic documentation:
+% https://euphonic.readthedocs.io
 %
 %   >> [w, sf] = calculate_sf(qh, qk, ql, par)
 %
