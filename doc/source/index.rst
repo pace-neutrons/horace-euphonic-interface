@@ -1,0 +1,113 @@
+=========================
+horace-euphonic-interface
+=========================
+
+This is a simple interface to allow simulation of inelastic neutron scattering
+data from phonons in `Horace <https://horace.isis.rl.ac.uk/>`_ using
+`Euphonic <https://euphonic.readthedocs.io>`_. This is done using Horace
+`simulation functions <http://horace.isis.rl.ac.uk/Simulation>`_.
+
+.. contents:: :local:
+
+Installation
+------------
+
+First ensure you have both Horace and Euphonic installed:
+
+- `Horace docs <https://horace.isis.rl.ac.uk/>`_ 
+- `Euphonic docs <https://euphonic.readthedocs.io>`_
+
+
+Now download the required files from Github:
+
+.. code-block:: bash
+
+  git clone https://github.com/pace-neutrons/horace-euphonic-interface.git
+
+
+Then add the ``horace-euphonic-interface`` folder to the MATLAB search path.
+
+.. code-block:: matlab
+
+  >> addpath('/path/to/horace-euphonic-interface')
+
+The Python executable that you installed Euphonic with also needs to be
+specified in MATLAB. You can find the executable location in Python with:
+
+.. code-block:: python
+
+  >>> import sys
+  >>> print(sys.executable)
+
+You can then set this executable in MATLAB using:
+
+.. code-block:: MATLAB
+
+  >> pyversion('/path/to/python')
+
+Now that the MATLAB path and pyversion have been set up, test the installation
+in MATLAB using:
+
+.. code-block:: matlab
+
+  >> euphonic_on
+
+If there are no warnings everything is installed correctly
+
+Usage
+-----
+
+At the beginning of every MATLAB session, type:
+
+.. code-block:: matlab
+
+  >> euphonic_on
+
+To ensure everything is installed correctly and set some specific settings.
+
+In Horace, the ``disp2sqw_eval`` simulation function is used to simulate
+experimental data with Euphonic - this requires a function handle, to use
+Euphonic this is ``euphonic_sf``. For information on ``euphonic_sf``
+parameters, type:
+
+.. code-block:: matlab
+
+  >> help euphonic_sf
+
+Many of the parameters are passed straight to Euphonic, so see the Euphonic
+docs for more details.
+
+An example script simulating a simple cut is below:
+
+.. code-block:: matlab
+
+  % Read in experimental cut
+  cut = read_horace('quartz.d2d');
+
+  % Set required parameters
+  fwhh = 4.0;
+  temperature = 5;
+  scale = 1.0;
+  par = [temperature, scale];
+  scattering_lengths = struct('Si', 4.1491, 'O', 5.803);
+
+  % Set extra parameters
+  opts = {'model_args', {'quartz.castep_bin'}, ...
+          'phonon_kwargs', {'asr', 'reciprocal', 'reduce_qpts', true, ...
+                            'use_c', true, 'n_threads', int32(2), ...
+                            'eta_scale', 0.75}, ...
+          'dw_grid', [6,6,6], ...
+          'negative_e', true, ...
+          'chunk', 5000, ...
+          'lim', 1e-7};
+
+  % Finally simulate
+  cut_sim = disp2sqw_eval( ...
+      cut, @euphonic_sf, {par, scattering_lengths, opts}, fwhh, 'all');
+
+  % Plot
+  plot(cut_sim);
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
