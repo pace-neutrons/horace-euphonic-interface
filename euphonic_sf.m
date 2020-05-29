@@ -34,7 +34,11 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, scattering_lengths, opts)
 %                    Default: empty cell array
 %     dw_grid        Length 3 vector specifying the grid on which to calculate
 %                    the Debye-Waller factor e.g. [6, 6, 6] If dw_grid is not
-%                    supplied, the Debye-Waller factor will not be calculated
+%                    supplied, the Debye-Waller factor will not be
+%                    calculated. Default: []
+%     bose           Whether to apply the Bose factor. Default: true
+%     negative_e     Whether to simulate for negative energies (i.e. phonon
+%                    absorption). Default: false
 %     conversion_mat 3 x 3 matrix for converting hkl in the lattice used in
 %                    Horace to hkl in the lattice used in the simulation code
 %     chunk          How many q-points at a time to send to Euphonic, can be
@@ -60,12 +64,16 @@ default_opts = {'model', 'CASTEP';
                 'model_args', {};
                 'model_kwargs', {};
                 'phonon_kwargs', {};
+                'dw_grid', [];
+                'bose', true;
+                'negative_e', false;
                 'chunk', length(qh);
                 'lim', inf};
 default_opts_map = containers.Map(default_opts(:, 1), default_opts(:, 2), ...
                                   'UniformValues', false);
 opts = reshape(opts,2,[]);
 opts_map = containers.Map(opts(1, :), opts(2, :), 'UniformValues', false);
+% opts_map must be second in concat to overwrite default values
 opts_map = [default_opts_map; opts_map];
 
 
@@ -82,7 +90,7 @@ elseif lower(opts_map('model')) == "phonopy"
 end
 % Calculate Debye-Waller
 dw = string(missing); % string(missing) converts to Python's None
-if isKey(opts_map, 'dw_grid')
+if length(opts_map('dw_grid')) == 3
     phonon_kwargs = opts_map('phonon_kwargs');
     dw_qpts = eu.util.mp_grid(uint32(opts_map('dw_grid')));
     dw_phonons = fc.calculate_qpoint_phonon_modes( ...
@@ -116,16 +124,32 @@ for i=1:ceil(length(qh)/opts_map('chunk'))
     fprintf('Using Euphonic to interpolate for q-points %d:%d out of %d\n', ...
             qi, qf, length(qh))
     phonon_kwargs = opts_map('phonon_kwargs');
-    phonons = fc.calculate_qpoint_phonon_modes(qpts_py, pyargs(phonon_kwargs{:}));
-    sf_obj = phonons.calculate_structure_factor(scattering_lengths, pyargs('dw', dw));
+    phonons = fc.calculate_qpoint_phonon_modes( ...
+        qpts_py, pyargs(phonon_kwargs{:}));
+    sf_obj = phonons.calculate_structure_factor( ....
+        scattering_lengths, pyargs('dw', dw));
     w_py = sf_obj.frequencies.magnitude;
     sf_py = sf_obj.structure_factors.magnitude;
+    clear phonons sf_obj;
 
-    w_mat = vertcat(w_mat, reshape(double(w_py), w_py.shape{1}, w_py.shape{2}));
-    sf_mat = vertcat(sf_mat, reshape(double(sf_py), sf_py.shape{1}, sf_py.shape{2}));
+    if opts_map('negative_e')
+        w_py = py.numpy.hstack({w_py, -w_py});
+        sf_py = py.numpy.hstack({sf_py, sf_py});
+    end
+    if opts_map('bose')
+        boltz = ureg('k').to('meV/K').magnitude;
+        bose_func = py.getattr(eu.util, '_bose_factor');
+        bose = bose_func(w_py, temperature, pyargs('kB', boltz));
+        sf_py = sf_py*bose;
+    end
+
+    w_mat = vertcat(w_mat, ...
+                    reshape(double(w_py), w_py.shape{1}, w_py.shape{2}));
+    sf_mat = vertcat(sf_mat, ...
+                     reshape(double(sf_py), sf_py.shape{1}, sf_py.shape{2}));
 end
 % Limit max structure factor value
-sf_mat = min(sf_mat, opts_map('lim'));
+sf_mat = min(sf_mat*scale, opts_map('lim'));
 
 w = num2cell(w_mat, 1);
 sf = num2cell(sf_mat, 1);
