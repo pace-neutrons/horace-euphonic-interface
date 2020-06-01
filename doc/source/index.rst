@@ -45,6 +45,21 @@ You can then set this executable in MATLAB using:
 
   >> pyversion('/path/to/python')
 
+.. note::
+
+  **Running on Linux**
+
+  If running on Linux, the following must also be set from MATLAB to avoid
+  clashes between Python/MATLAB mathematics libraries:
+
+  .. code-block:: MATLAB
+
+    >> py.sys.setdlopenflags(int32(10));
+
+  This must be done **before** Python has been loaded in MATLAB (use
+  ``pyversion`` to see if Python is already loaded). The only way to unload
+  Python once it has been loaded is to restart MATLAB
+
 Now that the MATLAB path and pyversion have been set up, test the installation
 in MATLAB using:
 
@@ -52,18 +67,14 @@ in MATLAB using:
 
   >> euphonic_on
 
-If there are no warnings everything is installed correctly
+If there are no warnings everything should be installed correctly.
+
+The above commands can be added to a
+`startup.m <https://www.mathworks.com/help/matlab/ref/startup.html>`_ file so
+they are executed automatically at the start of every MATLAB session
 
 Usage
 -----
-
-At the beginning of every MATLAB session, type:
-
-.. code-block:: matlab
-
-  >> euphonic_on
-
-To ensure everything is installed correctly and set some specific settings.
 
 In Horace, the ``disp2sqw_eval`` simulation function is used to simulate
 experimental data with Euphonic - this requires a function handle, to use

@@ -19,10 +19,4 @@ end
 % Set number of openblas threads to 1 so it doesn't interfere with openmp
 setenv('OPENBLAS_NUM_THREADS', '1');
 
-if ~ispc
-    %  For running on Linux only - avoids incompatible compile time option
-    %  clashes leading to segfault
-    py.sys.setdlopenflags(int32(10));
-end
-
 end
