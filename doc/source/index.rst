@@ -108,6 +108,7 @@ An example script simulating a simple cut is below:
                             'use_c', true, 'n_threads', int32(2), ...
                             'eta_scale', 0.75}, ...
           'dw_grid', [6,6,6], ...
+          'conversion_mat', [1,0,0; 0,1,0; 0,0,-1], 
           'negative_e', true, ...
           'chunk', 5000, ...
           'lim', 1e-7};
@@ -118,6 +119,18 @@ An example script simulating a simple cut is below:
 
   % Plot
   plot(cut_sim);
+
+.. note::
+
+  **conversion_mat**
+
+  Pay particular attention to this parameter, this is a 3x3 matrix to convert
+  from the q-points in Horace to the q-points in the modelling code. This will
+  be required if you've used a different unit cell convention/orientation in
+  Horace and your modelling code, and will depend on the cells chosen. If
+  set incorrectly, the results will not make sense (or worse, may happen to
+  make sense at first in certain cuts due to symmetry, but give incorrect
+  results in other cuts later on!)
 
 .. toctree::
    :maxdepth: 2
