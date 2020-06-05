@@ -16,7 +16,4 @@ if exists ~= 2
              'Has euphonic_sf been added to the path?'], exists);
 end
 
-% Set number of openblas threads to 1 so it doesn't interfere with openmp
-setenv('OPENBLAS_NUM_THREADS', '1');
-
 end

@@ -9,8 +9,8 @@ data from phonons in `Horace <https://horace.isis.rl.ac.uk/>`_ using
 
 .. contents:: :local:
 
-Installation
-------------
+General Installation
+--------------------
 
 First ensure you have both Horace and Euphonic installed:
 
@@ -72,6 +72,23 @@ If there are no warnings everything should be installed correctly.
 The above commands can be added to a
 `startup.m <https://www.mathworks.com/help/matlab/ref/startup.html>`_ file so
 they are executed automatically at the start of every MATLAB session
+
+IDAaaS Installation
+-------------------
+
+Euphonic is already installed in a Python virtual environment at
+``/usr/local/virtualenvs/euphonicenv`` and ``horace-euphonic-interface``
+is available at ``/usr/local/mprogs``. To make use of these, add the following to
+your ``startup.m``:
+
+.. code-block:: matlab
+
+  addpath('/usr/local/mprogs/horace-euphonic-interface')
+  pyversion '/usr/local/virtualenvs/euphonicenv/bin/python3'
+  py.sys.setdlopenflags(int32(10))
+  euphonic_on
+
+That's it!
 
 Usage
 -----
