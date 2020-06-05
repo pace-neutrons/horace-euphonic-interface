@@ -7,12 +7,12 @@ function [w, sf] = euphonic_sf (qh, qk, ql, pars, scattering_lengths, opts)
 % For more details on the method, see the Euphonic documentation:
 % https://euphonic.readthedocs.io
 %
-%   >> [w, sf] = calculate_sf(qh, qk, ql, par)
+%   >> [w, sf] = calculate_sf(qh, qk, ql, pars, scattering_lengths, opts)
 %
 % Input:
 % ------
 % qh,qk,ql           Arrays of h,k,l
-% par                Parameters [T scale]
+% pars               Parameters [T scale]
 %                        T       Temperature (for Bose/Debye-Waller factors)
 %                        scale   Overall scale factor
 % scattering_lengths Structure containing scattering lengths for each ion type
