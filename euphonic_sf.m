@@ -130,18 +130,20 @@ for i=1:ceil(length(qh)/opts_map('chunk'))
         scattering_lengths, pyargs('dw', dw));
     w_py = sf_obj.frequencies.magnitude;
     sf_py = sf_obj.structure_factors.magnitude;
-    clear phonons sf_obj;
-
-    if opts_map('negative_e')
-        w_py = py.numpy.hstack({w_py, -w_py});
-        sf_py = py.numpy.hstack({sf_py, sf_py});
-    end
     if opts_map('bose')
-        boltz = ureg('k').to('meV/K').magnitude;
-        bose_func = py.getattr(eu.util, '_bose_factor');
-        bose = bose_func(w_py, temperature, pyargs('kB', boltz));
-        sf_py = sf_py*bose;
+        bose_func = py.getattr(sf_obj, '_bose_factor');
+        bose = bose_func(temperature*ureg('K'));
+        sf_py = (1 + bose)*sf_py;
     end
+    if opts_map('negative_e')
+        sf_py_negative = sf_obj.structure_factors.magnitude;
+        if opts_map('bose')
+            sf_py_negative = bose*sf_py_negative;
+        end
+        w_py = py.numpy.hstack({w_py, -w_py});
+        sf_py = py.numpy.hstack({sf_py, sf_py_negative});
+    end
+    clear phonons sf_obj;
 
     w_mat = vertcat(w_mat, ...
                     reshape(double(w_py), w_py.shape{1}, w_py.shape{2}));
