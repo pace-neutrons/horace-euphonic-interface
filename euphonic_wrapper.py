@@ -3,7 +3,7 @@ import os
 from euphonic import Crystal, ForceConstants, QpointPhononModes, DebyeWaller, ureg
 from euphonic.util import mp_grid
 
-class euphonic_wrapper(object):
+class EuphonicWrapper(object):
     # This a wrapper around the Euphonic ForceConstants and QpointPhononModes classes to make it easier to access from Matlab
     # It is meant to be used with a Matlab python_wrapper class and implements a horace_sqw function for use with Horace
 
@@ -31,11 +31,9 @@ class euphonic_wrapper(object):
         self.fall_back_on_python = True
         
         if value is not None:
-            if isinstance(value, str):
-                self.load(value)
-            elif hasattr('calculate_qpoint_phonon_modes'):
+            if hasattr(value, 'calculate_qpoint_phonon_modes'):
                 self.force_constants = value
-            elif hasattr('calculate_structure_factor'):
+            elif hasattr(value, 'calculate_structure_factor'):
                 self.phonon_modes = value
             elif isinstance(value, dict):
                 kwargs.update(value)
@@ -48,66 +46,6 @@ class euphonic_wrapper(object):
                 if ky in kwargs:
                     setattr(self, ky, kwargs.pop(ky))
 
-        # If there are still keyword arguments they should relate to constructing ForceConstants or QpointPhononModes
-        if len(kwargs.keys()) > 0:
-            if 'path' in kwargs:
-                try:
-                    self.force_constants = self.from_phonopy(kwargs)
-                except:
-                    self.from_dict(kwargs)
-            else:
-                self.from_dict(kwargs)
-                
-    def load(self, value):
-        # Tries to automatically determine type of input and auto-load it
-        if os.path.isdir(value):
-            self.force_constants = ForceConstants.from_phonopy(path=value)
-        elif os.path.isfile(value):
-            with open(value, 'rb') as fil:
-                byt = fil.read(14)
-            if byt == b'\x00\x00\x00\nCASTEP_BIN':
-                self.force_constants = ForceConstants.from_castep(value)
-            elif byt[:9] == b'phonopy:\n':
-                self.force_constants = ForceConstants.from_phonopy(path=os.path.dirname(value), summary_name=value)
-            elif byt[:8] == b'\x89HDF\r\n\x1a\n':
-                # Assumes that the summary is in the 'phonopy.yaml' file
-                self.force_constants = ForceConstants.from_phonopy(path=os.path.dirname(value), fc_name=value)
-            elif byt[:2] == b'{\n':
-                self.force_constants = ForceConstants.from_json_file(value)
-            elif byt == b' BEGIN header\n':
-                self.phonon_modes = QpointPhononModes.from_castep(value)
-            else:
-                raise RuntimeError(f'Cannot read {filename} due to unknown format')
-        else:
-            raise RuntimeError('Input string must be a file or folder name')
-
-    def from_dict(self, val):
-        # Constructs object manually from a dictionary of values
-        if 'crystal' not in val:
-            val['crystal'] = Crystal.from_dict(val).to_dict()
-        try:
-            self.force_constants = ForceConstants.from_dict(val)
-        except AttributeError:
-            try:
-                self.phonon_modes = QpointPhononModes.from_dict(val)
-            except AttributeError:
-                raise RuntimeError('Cannot construct either a force constants model or set of phonon modes from input')
-
-    def from_phonopy(self, val):
-        try:
-            arg_dict = {'path': val.pop('path', '.'), 
-                        'summary_name': val.pop('summary_name', 'phonopy.yaml'),
-                        'born_name': val.pop('born_name', None),
-                        'fc_name': val.pop('fc_name', 'FORCE_CONSTANTS'),
-                        'fc_format': val.pop('fc_format', None)}
-            self.force_constants = ForceConstants.from_phonopy(**arg_dict)
-        except:
-            arg_dict = {'path': val.pop('path', '.'), 
-                        'summary_name': val.pop('summary_name', 'phonopy.yaml'),
-                        'phonon_name': val.pop('phonon_name', 'band.yaml'),
-                        'phonon_format': val.pop('phonon_format', None)}
-            self.phonon_modes = QpointPhononModes.from_phonopy(**arg_dict)
- 
     def calculate_sf(self, qpts):
         if self.temperature > 0:
             if self.debye_waller is None and self.debye_waller_grid is not None:

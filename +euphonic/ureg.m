@@ -1,4 +1,4 @@
-classdef ureg < light_python_wrapper
+classdef ureg < euphonic.light_python_wrapper
     % Light Matlab wrapper class around the ureg units class
     properties(Access=protected)
         pyobj = [];  % Reference to python object

@@ -5,6 +5,12 @@ classdef light_python_wrapper < dynamicprops
     end
     methods(Static)
         function out = parse_args(args, fun_ref)
+            % Unwraps lightly-wrapped objects
+            for ii = 1:numel(args)
+                if isa(args{ii}, 'euphonic.light_python_wrapper')
+                    args{ii} = args{ii}.pyobj;
+                end
+            end
             % Convert Matlab style arguments to Python args and kwargs
             if nargin > 1
                 out = parse_with_signature(args, get_signatures(fun_ref));
@@ -99,7 +105,7 @@ function varargout = python_redirection(first_obj, s)
     while ii <= numel(s)
         if s(ii).type == '.'
             if numel(s) > ii && strcmp(s(ii+1).type, '()')
-                args = light_python_wrapper.parse_args(s(ii+1).subs, py.getattr(varargout, s(ii).subs));
+                args = euphonic.light_python_wrapper.parse_args(s(ii+1).subs, py.getattr(varargout, s(ii).subs));
                 varargout = varargout.(s(ii).subs)(args{:});
                 ii = ii + 2;
             else
