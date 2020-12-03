@@ -150,5 +150,7 @@ An example script simulating a simple cut is below:
   results in other cuts later on!)
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
-   :caption: Contents:
+
+   release-notes
