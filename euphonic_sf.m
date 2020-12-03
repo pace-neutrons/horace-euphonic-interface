@@ -145,10 +145,20 @@ for i=1:ceil(length(qh)/opts_map('chunk'))
     end
     clear phonons sf_obj;
 
-    w_mat = vertcat(w_mat, ...
-                    reshape(double(w_py), w_py.shape{1}, w_py.shape{2}));
-    sf_mat = vertcat(sf_mat, ...
-                     reshape(double(sf_py), sf_py.shape{1}, sf_py.shape{2}));
+    try
+        w_out = reshape(double(w_py), w_py.shape{1}, w_py.shape{2});
+        sf_out = reshape(double(sf_py), sf_py.shape{1}, sf_py.shape{2});
+    catch ME
+        if (strcmp(ME.identifier,'MATLAB:invalidConversion'))
+            w_out = reshape(double(py.array.array('d', py.numpy.nditer(w_py, pyargs('order', 'F')))), w_py.shape{1}, w_py.shape{2});
+            sf_out = reshape(double(py.array.array('d', py.numpy.nditer(sf_py, pyargs('order', 'F')))), sf_py.shape{1}, sf_py.shape{2});
+        else
+            rethrow(ME)
+        end
+    end
+
+    w_mat = vertcat(w_mat, w_out);
+    sf_mat = vertcat(sf_mat, sf_out);
 end
 % Limit max structure factor value
 sf_mat = min(sf_mat*scale, opts_map('lim'));
