@@ -7,29 +7,16 @@ class EuphonicWrapper(object):
     # This a wrapper around the Euphonic ForceConstants and QpointPhononModes classes to make it easier to access from Matlab
     # It is meant to be used with a Matlab python_wrapper class and implements a horace_sqw function for use with Horace
 
+    defaults = {'force_constants': None, 'phonon_modes': None, 'debye_waller': None, 'debye_waller_grid': None, 
+                'temperature': 0.0 * ureg('K'), 'bose': True, 'negative_e': False, 'conversion_mat': None, 'chunk': 5000, 
+                'lim': np.inf, 'scattering_lengths': 'Sears1992', 'weights': None, 'asr': None, 'dipole': True, 
+                'eta_scale': 1.0, 'splitting': True, 'insert_gamma': False, 'reduce_qpts': True, 'use_c': False, 
+                'n_threads': 1, 'fall_back_on_python': True, 'convolution_function': 'gauss'}
+
     def __init__(self, value=None, **kwargs):
-        self.force_constants = None
-        self.phonon_modes = None
-        self.debye_waller = None
-        self.debye_waller_grid = None
-        self.temperature = 0.0 * ureg('K')
-        self.bose = True
-        self.negative_e = False
-        self.conversion_mat = None
-        self.chunk = 5000
-        self.lim = np.inf
-        self.scattering_lengths = 'Sears1992'
-        self.weights = None
-        self.asr = None
-        self.dipole = True
-        self.eta_scale = 1.0
-        self.splitting = True
-        self.insert_gamma = False
-        self.reduce_qpts = True
-        self.use_c = False
-        self.n_threads = 1
-        self.fall_back_on_python = True
-        
+        for key, val in self.defaults.items():
+            setattr(self, key, kwargs.pop(key, self.defaults[key]))
+
         if value is not None:
             if hasattr(value, 'calculate_qpoint_phonon_modes'):
                 self.force_constants = value
@@ -37,14 +24,6 @@ class EuphonicWrapper(object):
                 self.phonon_modes = value
             elif isinstance(value, dict):
                 kwargs.update(value)
-
-        # Simple parameters can be set in keyword arguments
-        if len(kwargs.keys()) > 0:
-            for ky in ['debye_waller_grid', 'bose', 'negative_e', 'conversion_mat', 'chunk', 'lim', 'weights', 'asr',
-                       'dipole', 'eta_scale', 'splitting', 'insert_gamma', 'reduce_qpts', 'use_c', 'n_threads',
-                       'fall_back_on_python', 'temperature']:
-                if ky in kwargs:
-                    setattr(self, ky, kwargs.pop(ky))
 
     def calculate_sf(self, qpts):
         if self.temperature > 0:
