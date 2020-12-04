@@ -4,6 +4,51 @@ from euphonic import Crystal, ForceConstants, QpointPhononModes, DebyeWaller, ur
 from euphonic.util import mp_grid
 
 class EuphonicWrapper(object):
+    """
+    A class to calculate neutron scattering dispersions surfaces for use in Horace.
+    It must be constructed from a Euphonic ForceConstants object.
+
+    Methods
+    -------
+    w, sf = horace_disp(qh, qk, ql, pars=[])
+        Calculates the phonon dispersion surfaces `w` and structure factor `sf` at the specified
+        (qh, qk, ql) points. The optional parameter `pars=[scale_factor]` is just a single scale
+        factor to multiply the calculated structure factor by.
+
+    Attributes
+    ----------
+    temperature : float Quantity (default: 0 K)
+        Temperature at which to calculate phonons (used for Bose and Debye-Waller factor calculations)
+    bose : bool (default: True)
+        Whether to include the Bose temperature factor in the calculated structure factor
+    debye_waller : DebyeWaller object
+        This is computed and set internally by the class when the computation requests it 
+        (debye_waller_grid is set and temperature is non-zero)
+    debye_waller_grid : (3,) float ndarray (default: None)
+        The Monkhorst-Pack q-point grid size to use for the Debye-Waller calculation
+    negative_e : bool (default: False)
+        Whether to calculate the phonon anihilation / neutron energy gain / negative energy spectrum
+    conversion_mat : (3, 3) float ndarray (default: identity)
+        This matrix is applied to the input (hkl) q-point values before the phonon calculation
+    chunk : float (default: 5000)
+        If non-zero will chunk the phonon calculation into blocks of <chunk> q-points
+    lim : float (default: infinity)
+        A cut-off for the calculated structure factor where values above `lim` is set equal to it.
+    scattering_lengths : dict or string (default: 'Sears1992')
+        The scattering lengths (in femtometres) to use for the phonon calculations either as 
+        a dictionary with elements as keys or a string denoting a database (internal or from file)
+    asr : {'realspace', 'reciprocal'}, optional
+    dipole : boolean, optional
+    eta_scale : float, optional
+    splitting : boolean, optional
+    insert_gamma : boolean, optional
+    reduce_qpts : boolean, optional
+    use_c : boolean, optional
+    n_threads : int, optional
+    fall_back_on_python : boolean, optional
+        These are parameters used in the `calculate_qpoint_phonon_modes` method of ForceConstants
+        Type `help(fc.calculate_qpoint_phonon_modes)` where fc is the ForceConstants object you created.
+    """
     # This a wrapper around the Euphonic ForceConstants and QpointPhononModes classes to make it easier to access from Matlab
     # It is meant to be used with a Matlab python_wrapper class and implements a horace_sqw function for use with Horace
 

@@ -1,7 +1,10 @@
 classdef light_python_wrapper < dynamicprops
-    % Light Matlab wrapper class around a Euphonic interface Python class
+    % Abstract base class acting as a Matlab wrapper around a Python class
     properties(Abstract, Access=protected)
         pyobj;  % Reference to python object
+    end
+    properties(Access=protected)
+        helpref;  % Reference to the python class for help info
     end
     methods(Static)
         function out = parse_args(args, fun_ref)
@@ -25,6 +28,25 @@ classdef light_python_wrapper < dynamicprops
         end
     end
     methods
+        function [out, docTopic] = help(obj)
+            % Overloads the help function for this particular object to use the Python docstring
+            process = helpUtils.helpProcess(1, 1, {obj});
+            if ~isempty(obj.pyobj)
+                helptxt = char(py.getattr(obj.pyobj, '__doc__'));
+            elseif ~isempty(obj.helpref)
+                helptxt = char(py.getattr(obj.helpref, '__doc__'));
+            else
+                helptxt = sprintf(['Python object not found.\n' ...
+                                   'Please construct the object and call help on it.']);
+            end
+            docTopic = process.topic;
+            if nargout > 0
+                out = helptxt;
+            else
+                disp(docTopic);
+                disp(helptxt);
+            end
+        end
         function props = populate_props(obj)
             props = py.dir(obj.pyobj);
             for ii = 1:double(py.len(props))
@@ -49,18 +71,11 @@ classdef light_python_wrapper < dynamicprops
                     if numel(s) > 1 && strcmp(s(2).type, '()')
                         varargout = varargout(s(2).subs);
                         ii = 2;
-                    elseif py.hasattr(varargout, '__call__')
-                        varargout = varargout();
                     end
                     if numel(s) > ii
                         varargout = python_redirection(varargout, s((ii+1):end));
                     end
                 case '.'
-                    for ii = 1:numel(s)
-                        if s(ii).type == '{}'
-                            error('Syntax error: euphonic wrapper object does not support cell indexing');
-                        end
-                    end
                     try
                         varargout = python_redirection(obj.pyobj, s);
                         % Try to convert output to Matlab format if possible
@@ -98,18 +113,71 @@ classdef light_python_wrapper < dynamicprops
     end
 end
 
+function out = get_obj_or_class_method(obj, method, args)
+% Try to get a Python object's attribute using Matlab dot notation or python getattr method
+    try
+        if nargin > 2
+            out = obj.(method)(args{:}); 
+        else
+            out = obj.(method);
+        end
+    catch ME
+        if strcmp(ME.identifier, 'MATLAB:noSuchMethodOrField')
+            if nargin > 2
+                pyobj = py.getattr(obj, method);
+                out = pyobj(args{:});
+            else
+                out = py.getattr(obj, method);
+            end
+        else
+            rethrow ME;
+        end
+    end
+end
+
+function out = is_simple_python(class_name)
+    simple_classes = {'py.float', 'py.complex', 'py.int', 'py.long', 'py.str', ...
+                      'py.bool', 'py.dict', 'py.tuple', 'py.list', ...
+                      'py.unicode', 'py.bytes', 'py.array.array'};
+	out = any(cellfun(@(c) strcmp(class_name, c), simple_classes));
+end
+
+function objs = wrap_python(objs)
+% Wraps a cell of Python objects in a light wrapper, unless they are base python types
+% This allows the overload help function to work
+    for ii = 1:numel(objs)
+        if strncmp(class(objs{ii}), 'py.', 3) && ~is_simple_python(class(objs{ii}))
+            objs{ii} = euphonic.generic_python_wrapper(objs{ii});
+        end
+    end
+end
+
 function varargout = python_redirection(first_obj, s)
     % Function to parse a subsref indexing structure and return recursively the desired python property
     ii = 1;
     varargout = first_obj;
+    dont_wrap = false;
     while ii <= numel(s)
         if s(ii).type == '.'
             if numel(s) > ii && strcmp(s(ii+1).type, '()')
                 args = euphonic.light_python_wrapper.parse_args(s(ii+1).subs, py.getattr(varargout, s(ii).subs));
-                varargout = varargout.(s(ii).subs)(args{:});
+                varargout = get_obj_or_class_method(varargout, s(ii).subs, args);
+                ii = ii + 2;
+            elseif strcmp(s(ii).subs, 'pyobj')
+                dont_wrap = true;
+                ii = ii + 1;
+            else
+                varargout = get_obj_or_class_method(varargout, s(ii).subs);
+                ii = ii + 1;
+            end
+        elseif s(ii).type == '{}'
+            attribute = py.getattr(varargout, s(ii).subs{1});
+            if numel(s) > ii && strcmp(s(ii+1).type, '()')
+                args = euphonic.light_python_wrapper.parse_args(s(ii+1).subs, attribute);
+                varargout = attribute(args{:});
                 ii = ii + 2;
             else
-                varargout = varargout.(s(ii).subs);
+                varargout = attribute;
                 ii = ii + 1;
             end
         else
@@ -119,6 +187,9 @@ function varargout = python_redirection(first_obj, s)
     end
     if ~iscell(varargout)
         varargout = {varargout};
+    end
+    if ~dont_wrap
+        varargout = wrap_python(varargout);
     end
 end
 

@@ -1,5 +1,7 @@
 classdef force_constants < euphonic.light_python_wrapper
-    % Light Matlab wrapper class around the ureg units class
+    % Matlab class around the ForceConstants Python class
+    % To obtain help on this class and its methods please type help(class) or help(class.method) on the command line.
+    % This will bring up the Python documentation
     properties(Access=protected)
         pyobj = [];  % Reference to python object
         eu = [];     % Reference to euphonic module
@@ -8,6 +10,7 @@ classdef force_constants < euphonic.light_python_wrapper
         % Constructor
         function obj = force_constants(varargin)
             obj.eu = py.importlib.import_module('euphonic');
+            obj.helpref = obj.eu.ForceConstants;
             if ~isempty(varargin)
                 args = euphonic.light_python_wrapper.parse_args(varargin, py.getattr(obj.eu.ForceConstants, '__init__'));
                 obj.pyobj = py.euphonic.ForceConstants(args{:});

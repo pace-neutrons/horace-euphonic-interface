@@ -1,5 +1,7 @@
 classdef ureg < euphonic.light_python_wrapper
-    % Light Matlab wrapper class around the ureg units class
+    % Matlab wrapper around the ureg units registry
+    % To obtain help on this class and its methods please type help(class) or help(class.method) on the command line.
+    % This will bring up the Python documentation
     properties(Access=protected)
         pyobj = [];  % Reference to python object
     end
