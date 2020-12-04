@@ -7,10 +7,9 @@ classdef force_constants < euphonic.light_python_wrapper
     methods
         % Constructor
         function obj = force_constants(varargin)
-            py.sys.setdlopenflags(int32(10));
             obj.eu = py.importlib.import_module('euphonic');
             if ~isempty(varargin)
-                args = euphonic.light_python_wrapper.parse_args(varargin, py.getattr(py.euphonic.ForceConstants, '__init__'));
+                args = euphonic.light_python_wrapper.parse_args(varargin, py.getattr(obj.eu.ForceConstants, '__init__'));
                 obj.pyobj = py.euphonic.ForceConstants(args{:});
                 obj.populate_props();
             end
@@ -33,8 +32,8 @@ classdef force_constants < euphonic.light_python_wrapper
             obj.populate_props();
         end
         function obj = from_phonopy(varargin)
-            args = euphonic.light_python_wrapper.parse_args(varargin, obj.eu.ForceConstants.from_phonopy);
             obj = euphonic.force_constants;
+            args = euphonic.light_python_wrapper.parse_args(varargin, obj.eu.ForceConstants.from_phonopy);
             obj.pyobj = obj.eu.ForceConstants.from_phonopy(args{:});
             obj.populate_props();
         end

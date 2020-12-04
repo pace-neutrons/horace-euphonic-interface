@@ -212,7 +212,7 @@ function out = parse_with_signature(args, signatures)
     missing_args = setdiff(named_args, args_kw(1:2:end));
     [~, ~, missing_args_index] = intersect(missing_args, {signatures.sigs.name});
     % The first set of consecutive missing arguments must be in the positional arguments list
-    consecutive_args = max(find((missing_args_index(:)' - [1:numel(missing_args_index)]) == 0));
+    consecutive_args = max(find((sort(missing_args_index(:)') - [1:numel(missing_args_index)]) == 0));
     first_args = min(consecutive_args, signatures.first_default - 1);
     args_pos = {};
     if numel(args_remaining) >= first_args

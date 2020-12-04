@@ -7,29 +7,21 @@ class EuphonicWrapper(object):
     # This a wrapper around the Euphonic ForceConstants and QpointPhononModes classes to make it easier to access from Matlab
     # It is meant to be used with a Matlab python_wrapper class and implements a horace_sqw function for use with Horace
 
-    defaults = {'force_constants': None, 'phonon_modes': None, 'debye_waller': None, 'debye_waller_grid': None, 
-                'temperature': 0.0 * ureg('K'), 'bose': True, 'negative_e': False, 'conversion_mat': None, 'chunk': 5000, 
-                'lim': np.inf, 'scattering_lengths': 'Sears1992', 'weights': None, 'asr': None, 'dipole': True, 
-                'eta_scale': 1.0, 'splitting': True, 'insert_gamma': False, 'reduce_qpts': True, 'use_c': False, 
-                'n_threads': 1, 'fall_back_on_python': True, 'convolution_function': 'gauss'}
+    defaults = {'debye_waller': None, 'debye_waller_grid': None, 'temperature': 0.0 * ureg('K'), 'bose': True,
+                'negative_e': False, 'conversion_mat': None, 'chunk': 5000, 'lim': np.inf, 'scattering_lengths': 'Sears1992',
+                'weights': None, 'asr': None, 'dipole': True, 'eta_scale': 1.0, 'splitting': True, 'insert_gamma': False, 
+                'reduce_qpts': True, 'use_c': False, 'n_threads': 1, 'fall_back_on_python': True}
 
-    def __init__(self, value=None, **kwargs):
+    def __init__(self, force_constants, **kwargs):
         for key, val in self.defaults.items():
             setattr(self, key, kwargs.pop(key, self.defaults[key]))
+        self.force_constants = force_constants
 
-        if value is not None:
-            if hasattr(value, 'calculate_qpoint_phonon_modes'):
-                self.force_constants = value
-            elif hasattr(value, 'calculate_structure_factor'):
-                self.phonon_modes = value
-            elif isinstance(value, dict):
-                kwargs.update(value)
-
-    def calculate_sf(self, qpts):
+    def _calculate_sf(self, qpts):
         if self.temperature > 0:
             if self.debye_waller is None and self.debye_waller_grid is not None:
-                self.calculate_debye_waller()
-        phonons = self.calculate_phonon_modes(qpts)
+                self._calculate_debye_waller()
+        phonons = self._calculate_phonon_modes(qpts)
         sf_obj = phonons.calculate_structure_factor(scattering_lengths=self.scattering_lengths,
                                                     dw=self.debye_waller)
         w = sf_obj.frequencies.magnitude
@@ -45,7 +37,31 @@ class EuphonicWrapper(object):
             sf = np.hstack((sf, neg_sf))
         return w, sf
         
-    def horace_sqw(self, qh, qk, ql, scale=1., *args, **kwargs):
+    def horace_disp(self, qh, qk, ql, pars=[], *args, **kwargs):
+        """
+        Calculates the phonon dispersion surface for input qh, qk, and ql vectors for use with Horace
+ 
+        Parameters
+        ----------
+        qh, qk, ql : (n_pts,) float ndarray
+            The q-points to calculate at as separate vectors
+        pars : float ndarray
+            Parameters for the calculation (currently just the scale factor)
+            pars[0] = scale factor to multiply the intensity by
+        args: tuple
+            Arguments passed directly to the convolution function
+        kwargs : dict
+            Keyword arguments passed directly to the convolution function
+
+        Returns
+        -------
+        w : (n_modes,) tuple of (n_pts,) float ndarray
+            The phonon dispersion energies as a tuple of numpy float vectors
+        sf : (n_modes,) tuple of (n_pts,) float ndarray
+            The dynamical structure corresponding to phonon energies in w as a tuple of numpy float vectors
+        """
+
+        scale = (pars[0] if len(pars) > 0 else 1.) if hasattr(pars, '__len__') else pars
         if self.chunk > 0:
             lqh = len(qh)
             for i in range(int(np.ceil(lqh / self.chunk))):
@@ -54,7 +70,7 @@ class EuphonicWrapper(object):
                 n = qf - qi + 1
                 print(f'Using Euphonic to interpolate for q-points {qi}:{qf} out of {lqh}')
                 qpts = np.vstack((np.squeeze(qh[qi:qf]), np.squeeze(qk[qi:qf]), np.squeeze(ql[qi:qf]))).T
-                sqw = self.calculate_sf(qpts)
+                sqw = self._calculate_sf(qpts)
                 if i == 0:
                     w = sqw[0]
                     sf = sqw[1]
@@ -62,9 +78,10 @@ class EuphonicWrapper(object):
                     w = np.vstack((w, sqw[0]))
                     sf = np.vstack((sf, sqw[1]))
         else:
-            w, sf = self.calculate_sf(np.vstack((np.squeeze(qh), np.squeeze(qk), np.squeeze(ql))).T)
+            w, sf = self._calculate_sf(np.vstack((np.squeeze(qh), np.squeeze(qk), np.squeeze(ql))).T)
         if scale != 1.:
             sf *= scale
+        sf = np.minimum(sf, self.lim)
         # Splits into different dispersion surfaces (python tuple == matlab cell)
         # But the data must be contiguous in memory so we need to do a real tranpose (.T just changes strides)
         # So we need to convert to "fortran" format (which physically transposes data) before doing ".T"
@@ -72,7 +89,7 @@ class EuphonicWrapper(object):
         sf = np.asfortranarray(sf).T
         return tuple(w), tuple(sf)
 
-    def calculate_phonon_modes(self, qpts):
+    def _calculate_phonon_modes(self, qpts):
         if self.force_constants is None:
             raise RuntimeError('Force constants model not set')
         return self.force_constants.calculate_qpoint_phonon_modes(qpts,
@@ -80,13 +97,13 @@ class EuphonicWrapper(object):
             splitting=self.splitting, insert_gamma=self.insert_gamma, reduce_qpts=self.reduce_qpts,
             use_c=self.use_c, n_threads=self.n_threads, fall_back_on_python=self.fall_back_on_python)
 
-    def calculate_debye_waller(self):
+    def _calculate_debye_waller(self):
         if self.temperature <= 0.0:
             return
         if self.debye_waller_grid is None:
             raise RuntimeError('Q-points grid for Debye Waller calculation not set')
         dw_qpts = mp_grid(self.debye_waller_grid)
-        dw_phonons = self.calculate_phonon_modes(dw_qpts)
+        dw_phonons = self._calculate_phonon_modes(dw_qpts)
         self.debye_waller = dw_phonons.calculate_debye_waller(self.temperature)
 
     @property
@@ -101,21 +118,7 @@ class EuphonicWrapper(object):
             if hasattr(val, 'calculate_qpoint_phonon_modes'):
                 self._force_constants = val
             else:
-                raise RuntimeError('Invalid force constant model')
-
-    @property
-    def phonon_modes(self):
-        return self._phonon_modes
-
-    @phonon_modes.setter
-    def phonon_modes(self, val):
-        if val is None or val == 'None':
-            self._phonon_modes = None
-        else:
-            if hasattr(val, 'calculate_structure_factor'):
-                self._phonon_modes = val
-            else:
-                raise RuntimeError('Invalid phonon modes object')
+                raise ValueError('Invalid force constant model')
 
     @property
     def debye_waller(self):
@@ -129,7 +132,7 @@ class EuphonicWrapper(object):
             if hasattr(val, 'debye_waller'):
                 self._debye_waller = val
             else:
-                raise RuntimeError('Invalid Debye-Waller object')
+                raise ValueError('Invalid Debye-Waller object')
 
     @property
     def debye_waller_grid(self):
@@ -146,7 +149,7 @@ class EuphonicWrapper(object):
                 # Reset the Debye Waller factor if it was previously set.
                 self.debye_waller = None
             else:
-                raise RuntimeError('Invalid Debye-Waller grid')
+                raise ValueError('Invalid Debye-Waller grid')
 
     @property
     def conversion_mat(self):
@@ -161,7 +164,7 @@ class EuphonicWrapper(object):
             if np.shape(val) == (3, 3):
                 self._conversion_mat = val
             else:
-                raise RuntimeError('Invalid conversion matrix')
+                raise ValueError('Invalid conversion matrix')
 
     @property
     def temperature(self):
@@ -183,7 +186,7 @@ class EuphonicWrapper(object):
             self._scattering_lengths = \
                 {ky: (v if hasattr(v, 'units') else v * ureg('fm')) for ky, v in val.items()}
         else:
-            raise RuntimeError('Invalid scattering lengths')
+            raise ValueError('Invalid scattering lengths')
 
     @property
     def chunk(self):
