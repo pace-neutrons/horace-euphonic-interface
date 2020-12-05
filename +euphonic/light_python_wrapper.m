@@ -6,7 +6,7 @@ classdef light_python_wrapper < dynamicprops
     properties(Access=protected)
         helpref;  % Reference to the python class for help info
     end
-    methods(Static)
+    methods(Static, Access=protected)
         function out = parse_args(args, fun_ref)
             % Unwraps lightly-wrapped objects
             for ii = 1:numel(args)
@@ -47,19 +47,13 @@ classdef light_python_wrapper < dynamicprops
                 disp(helptxt);
             end
         end
-        function props = populate_props(obj)
-            props = py.dir(obj.pyobj);
-            for ii = 1:double(py.len(props))
-                if ~props{ii}.startswith('_')
-                    % Adds property names here so tab-completion works.
-                    % But actually overload subsref so call Python directly. (So matlab properties are empty.)
-                    obj.addprop(props{ii}.char);
-                end
+        function out = display(obj)
+            % Overloads the default information Matlab displays when the object is called
+            repr_fun = py.getattr(obj.pyobj, '__repr__');
+            out = repr_fun();
+            if nargout == 0;
+                disp(out);
             end
-        end
-        function n = numArgumentsFromSubscript(obj, s, indexingContext)
-            % Function to override nargin/nargout for brace indexing to access hidden properties
-            n = 1;
         end
         function varargout = subsref(obj, s)
             % Overloads Matlab indexing to allow users to get at Python properties directly using dot notation.
@@ -84,7 +78,8 @@ classdef light_python_wrapper < dynamicprops
                         end
                     catch ME
                         % Property is not in the Python object - must be in the Matlab object
-                        if strcmp(ME.identifier, 'MATLAB:noSuchMethodOrField') || ...
+                        if (strcmp(ME.identifier, 'MATLAB:Python:PyException') && ...
+                                ~isempty(strfind(ME.message, 'object has no attribute'))) || ...
                            strcmp(ME.message, sprintf('Object "%s" is not callable', s(1).subs))
                             if numel(s) > 1 && strcmp(s(2).type, '()')
                                 varargout = obj.(s(1).subs)(s(2).subs{:});
@@ -102,13 +97,26 @@ classdef light_python_wrapper < dynamicprops
                 varargout = {varargout};
             end
         end
-        function out = display(obj)
-            % Overloads the default information Matlab displays when the object is called
-            repr_fun = py.getattr(obj.pyobj, '__repr__');
-            out = repr_fun();
-            if nargout == 0;
-                disp(out);
+    end
+    methods(Access=protected)
+        function props = populate_props(obj)
+            props = py.dir(obj.pyobj);
+            for ii = 1:double(py.len(props))
+                if ~props{ii}.startswith('_')
+                    % Adds property names here so tab-completion works.
+                    % But actually overload subsref so call Python directly. (So matlab properties are empty.)
+                    obj.addprop(props{ii}.char);
+                end
             end
+        end
+    end
+    methods(Hidden=true)
+        function n = numArgumentsFromSubscript(obj, s, indexingContext)
+            % Function to override nargin/nargout for brace indexing to access hidden properties
+            n = 1;
+        end
+        function D = addprop(obj, propname)
+            D = addprop@dynamicprops(obj, propname);
         end
     end
 end
@@ -122,15 +130,16 @@ function out = get_obj_or_class_method(obj, method, args)
             out = obj.(method);
         end
     catch ME
-        if strcmp(ME.identifier, 'MATLAB:noSuchMethodOrField')
+        if strcmp(ME.identifier, 'MATLAB:noSuchMethodOrField') || ...
+            (nargin < 3 && strcmp(ME.identifier, 'MATLAB:Python:PyException'))
             if nargin > 2
                 pyobj = py.getattr(obj, method);
                 out = pyobj(args{:});
             else
                 out = py.getattr(obj, method);
-            end
+            end            
         else
-            rethrow ME;
+            rethrow(ME);
         end
     end
 end
@@ -157,6 +166,7 @@ function varargout = python_redirection(first_obj, s)
     ii = 1;
     varargout = first_obj;
     dont_wrap = false;
+    help_not_called = true;
     while ii <= numel(s)
         if s(ii).type == '.'
             if numel(s) > ii && strcmp(s(ii+1).type, '()')
@@ -166,6 +176,15 @@ function varargout = python_redirection(first_obj, s)
             elseif strcmp(s(ii).subs, 'pyobj')
                 dont_wrap = true;
                 ii = ii + 1;
+            elseif strcmp(s(ii).subs, 'help') && help_not_called
+                % Fails silently, and return to previous behaviour
+                % (including any error that would have occured).
+                try
+                    mat_obj = wrap_python({varargout});
+                    varargout = help(mat_obj{1});
+                    ii = ii + 1;
+                end
+                help_not_called = false;
             else
                 varargout = get_obj_or_class_method(varargout, s(ii).subs);
                 ii = ii + 1;
