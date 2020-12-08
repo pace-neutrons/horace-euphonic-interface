@@ -21,14 +21,18 @@ function m = p2m(p)
         m = uint64(p);
     elseif contains(class(p),'int','IgnoreCase',true)
         m = int64(p);
-    elseif strcmp(class(p), 'py.tuple')
+    elseif isa(p, 'euphonic.light_python_wrapper')
+        m = euphonic.p2m(p.pyobj);
+    elseif isa(p, 'py.tuple')
         m = p.cell;
         for ii = 1:numel(m)
-            m{ii} = p2m(m{ii});
+            m{ii} = euphonic.p2m(m{ii});
         end
+    elseif isnumeric(p)
+        m = p;
     else
         if verLessThan('matlab','9.4') % before 2018a(?) For sure by 2018b=9.5
-            warning('brille:p2m','Fast conversion of numpy.ndarrays not supported by this version of MATLAB. Consider upgrading.');
+            warning('euphonic:p2m','Fast conversion of numpy.ndarrays not supported by this version of MATLAB. Consider upgrading.');
             ndim = int64(p.ndim);
             nmel = int64(p.size);
             if ndim>1

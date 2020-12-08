@@ -22,9 +22,9 @@ classdef ureg < euphonic.light_python_wrapper
     methods(Access=private)
         function out = multiply(a, b)
             if strcmp(class(a), 'ureg')
-                out = a.pyobj * m2p(b);
+                out = a.pyobj * euphonic.m2p(b);
             else
-                out = m2p(a) * b.pyobj;
+                out = euphonic.m2p(a) * b.pyobj;
             end
         end    
     end
