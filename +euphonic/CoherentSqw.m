@@ -8,12 +8,13 @@ classdef CoherentSqw < light_python_wrapper.light_python_wrapper
     methods
         % Constructor
         function obj = CoherentSqw(varargin)
-            eu = py.importlib.import_module('euphonic_wrapper');
+            euphonic_on();
+            eu = py.importlib.import_module('horace_euphonic_interface');
             obj.helpref = eu.EuphonicWrapper;
             % Allow empty constructor for help function
             if ~isempty(varargin)
                 args = light_python_wrapper.light_python_wrapper.parse_args(varargin, py.getattr(eu.EuphonicWrapper, '__init__'));
-                obj.pyobj = py.euphonic_wrapper.EuphonicWrapper(args{:});
+                obj.pyobj = py.horace_euphonic_interface.EuphonicWrapper(args{:});
                 obj.populate_props();
             end
         end

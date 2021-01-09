@@ -8,7 +8,8 @@ classdef ureg < light_python_wrapper.light_python_wrapper
     methods
         % Constructor
         function obj = ureg(unit_name)
-            obj.pyobj = py.euphonic_wrapper.ureg(char(unit_name));
+            euphonic_on();
+            obj.pyobj = py.euphonic.ureg(char(unit_name));
             obj.populate_props();
         end
         % Overloads multiply to ensure lhs/rhs formats always correct

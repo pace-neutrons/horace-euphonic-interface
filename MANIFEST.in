@@ -1,0 +1,2 @@
+include versioneer.py
+include horace_euphonic_interface/_version.py
