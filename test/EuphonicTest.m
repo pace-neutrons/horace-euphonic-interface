@@ -14,29 +14,31 @@ classdef EuphonicTest < EuphonicTestSuper
     
     methods (TestMethodSetup, ParameterCombination='sequential')
         function set_euphonic_sf_args(testCase, use_c, n_threads, chunk)
-            qpts = testCase.qpts;
             opts = testCase.opts;
             pars = testCase.pars;
-            phonon_kwargs = {'phonon_kwargs', ...
-                                {'asr', 'reciprocal', ...
-                                    'use_c', use_c, ...
-                                    'n_threads', n_threads}};
+            phonon_kwargs = {'asr', 'reciprocal', ...
+                             'use_c', use_c, ...
+                             'n_threads', n_threads};
             opts = [opts phonon_kwargs];
             if ~ismissing(chunk)
                 opts = [opts {'chunk', chunk}];
             end
+            opts = [opts {'scattering_lengths', testCase.scattering_lengths}];
+            opts = [opts {'temperature', pars(1)}];
             
-            euphonic_sf_args = {qpts(:, 1), qpts(:, 2), qpts(:, 3), ...
-                                pars, testCase.scattering_lengths, opts};
-            testCase.euphonic_sf_args = euphonic_sf_args;
+            testCase.euphonic_sf_args = opts;
         end
     end
 
     methods(Test, ParameterCombination='sequential', TestTags={'integration'})
         function runIntegrationTests(testCase)
-            [w, sf] = euphonic_sf(testCase.euphonic_sf_args{:});
-            w_mat = cell2mat(w);
-            sf_mat = cell2mat(sf);
+            coherentsqw = euphonic.CoherentSqw(testCase.force_constants, ...
+                                               testCase.euphonic_sf_args{:});
+            qpts = testCase.qpts;
+            [w, sf] = coherentsqw.horace_disp(qpts(:, 1), qpts(:, 2), qpts(:, 3), ...
+                                              testCase.pars(2));
+            w_mat = transpose(cell2mat(w'));
+            sf_mat = transpose(cell2mat(sf'));
 
             fname = get_expected_output_filename(testCase.material_name, ...
                                                  testCase.pars, testCase.opts);

@@ -6,15 +6,15 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
         scattering_lengths
         opts
         material_name
+        force_constants
     end
 
     properties (ClassSetupParameter)
         temp = {300};
         materials = { ...
-           {'quartz', {'model', 'CASTEP', ...
-                       'model_args', {get_abspath('quartz.castep_bin', 'input')}}}, ...
-          {'nacl', {'model', 'phonopy', ...
-                    'model_kwargs' {'path', get_abspath('NaCl', 'input')}}}};
+           {'quartz', @euphonic.ForceConstants.from_castep, {get_abspath('quartz.castep_bin', 'input')}}, ...
+           {'nacl',  @euphonic.ForceConstants.from_phonopy, {'path', get_abspath('NaCl', 'input')}}, ...
+        }
         dw_grid = {missing, [6,6,6]};
         bose = {missing, false};
         negative_e = {missing, true};
@@ -38,9 +38,9 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
                                         'Si', 4.1491, 'Na', 3.63, 'Cl', 9.577);
             scale = 1.0;
 
-            opts = materials{2};
+            opts = {};
             % Only add values to opts if they aren't missing
-            opts_keys = {'dw_grid', 'bose', 'negative_e', 'conversion_mat', ...
+            opts_keys = {'debye_waller_grid', 'bose', 'negative_e', 'conversion_mat', ...
                          'lim'};
             opts_values = {dw_grid, bose, negative_e, conversion_mat, lim};
             for i=1:length(opts_keys)
@@ -54,6 +54,7 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
             testCase.scattering_lengths = scattering_lengths;
             testCase.opts = opts;
             testCase.material_name = materials{1};
+            testCase.force_constants = materials{2}(materials{3}{:});
         end
     end
 end
