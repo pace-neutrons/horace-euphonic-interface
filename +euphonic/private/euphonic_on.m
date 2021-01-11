@@ -14,7 +14,20 @@ end
 
 % Check if Euphonic is installed and the correct version
 req_mods = required_modules;
-verify_python_modules(req_mods{:});
+try
+    verify_python_modules(req_mods{:});
+catch ME
+    %if strncmp(ME.message, 'Python Error: DistributionNotFound:')
+    if ~isempty(strfind(ME.message, 'DistributionNotFound'))
+        modules = join(mod_str(req_mods));
+        modules = sprintf('%s', modules{:});
+        error(sprintf(['The Python modules required are not installed. ' ... 
+              'Please install them with:\npip install ' modules '\n' ...
+              'Or use the ''euphonic.install_python_modules'' script.']));
+    else
+        rethrow(ME);
+    end
+end
 
 help_text = ['If not you can install it using ''pip install %s'' on the command line ' ...
              'or use the Matlab command ''euphonic.install_python_modules'' included ' ...

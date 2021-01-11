@@ -32,8 +32,8 @@ classdef EuphonicTest < EuphonicTestSuper
 
     methods(Test, ParameterCombination='sequential', TestTags={'integration'})
         function runIntegrationTests(testCase)
-            coherentsqw = euphonic.CoherentSqw(testCase.force_constants, ...
-                                               testCase.euphonic_sf_args{:});
+            coherentsqw = euphonic.CoherentCrystal(testCase.force_constants, ...
+                                                   testCase.euphonic_sf_args{:});
             qpts = testCase.qpts;
             [w, sf] = coherentsqw.horace_disp(qpts(:, 1), qpts(:, 2), qpts(:, 3), ...
                                               testCase.pars(2));

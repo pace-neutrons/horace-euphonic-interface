@@ -8,7 +8,7 @@
     <param.description>Interface to a Python code (Euphonic) to calculate phonon spectra from ab initio code outputs.</param.description>
     <param.screenshot />
     <param.version>1.0</param.version>
-    <param.output>${PROJECT_ROOT}/horace_euphonic_interface.mltbx</param.output>
+    <param.output>./horace_euphonic_interface.mltbx</param.output>
     <param.products.name />
     <param.products.id />
     <param.products.version />
@@ -79,17 +79,17 @@
       <param.additional.sw.linux.url />
     </unset>
     <fileset.rootdir>
-      <file>${PROJECT_ROOT}</file>
+      <file>.</file>
     </fileset.rootdir>
     <fileset.rootfiles>
-      <file>${PROJECT_ROOT}/+euphonic</file>
-      <file>${PROJECT_ROOT}/+light_python_wrapper</file>
+      <file>./+euphonic</file>
+      <file>./+light_python_wrapper</file>
     </fileset.rootfiles>
     <fileset.depfun.included />
     <fileset.depfun.excluded />
     <fileset.package />
     <build-deliverables>
-      <file location="${PROJECT_ROOT}" name="horace_euphonic_interface.mltbx" optional="false">horace_euphonic_interface.mltbx</file>
+      <file location="." name="horace_euphonic_interface.mltbx" optional="false">horace_euphonic_interface.mltbx</file>
     </build-deliverables>
     <workflow />
     <matlab>

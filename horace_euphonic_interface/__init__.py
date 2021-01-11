@@ -1,4 +1,4 @@
-from .euphonic_wrapper import EuphonicWrapper
+from .euphonic_wrapper import CoherentCrystal
 
 from ._version import get_versions
 __version__ = get_versions()['version']

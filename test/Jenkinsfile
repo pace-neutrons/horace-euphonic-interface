@@ -160,7 +160,23 @@ pipeline {
                         setGitHubBuildStatus("success", "Successful", "Linux")
                     }
                 }
+    		    if (isUnix()) {
+                            sh """
+                                module load matlab/\$MATLAB_VERSION &&
+                                module load conda/3 &&
+                                conda activate py &&
+                                python -m pip install requests
+                                python release.py --github
+                            """
+    		    } else {
+                            bat """
+                                CALL conda activate py_%MATLAB_VERSION%
+                                python -m pip install requests
+                                python release.py --github
+                            """
+    		    }
 	    }
+        archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
         }
 
         unsuccessful {

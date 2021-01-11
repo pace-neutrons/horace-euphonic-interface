@@ -3,7 +3,7 @@ import os
 from euphonic import Crystal, ForceConstants, QpointPhononModes, DebyeWaller, ureg
 from euphonic.util import mp_grid
 
-class EuphonicWrapper(object):
+class CoherentCrystal(object):
     """
     A class to calculate neutron scattering dispersions surfaces for use in Horace.
     It must be constructed from a Euphonic ForceConstants object.
