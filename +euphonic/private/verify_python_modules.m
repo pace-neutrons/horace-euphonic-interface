@@ -43,11 +43,17 @@ end
 
 for mod = fieldnames(mods)'
     try
-      ver = char(py.pkg_resources.get_distribution(mod{:}).version);
-    catch prob
-      error('euphonic_horace_interface:verify_python_modules:modVersionUnavailable',...
-            'Problem obtaining %s module version string\n%s',...
-            mod{:}, prob.message);
+        ver = char(py.pkg_resources.get_distribution(mod{:}).version);
+    catch
+        try
+            % Try to get version directly
+            imp_mod = py.importlib.import_module(mod{:});
+            ver = char(py.getattr(imp_mod, '__version__'));
+        catch prob
+            error('euphonic_horace_interface:verify_python_modules:modVersionUnavailable',...
+                'Problem obtaining %s module version string\n%s',...
+                 mod{:}, prob.message);
+        end
     end
 
     if ~semver_compatible(ver, mods.(mod{:}))

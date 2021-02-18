@@ -1,3 +1,6 @@
 [submodule "light_python_wrapper"]
 	path = light_python_wrapper
 	url = https://github.com/pace-neutrons/light_python_wrapper.git
+[submodule "euphonic_horace"]
+	path = euphonic_horace
+	url = https://github.com/pace-neutrons/euphonic_horace

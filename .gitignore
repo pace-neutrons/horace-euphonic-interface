@@ -1,2 +1,11 @@
 *.asv
 doc/source/test_html
+__pycache__
+*.pyc
+*~
+*.swp
+*.swo
+mltbx/+euphonic/
+mltbx/+light_python_wrapper/
+mltbx/euphonic_horace/
+mltbx/horace_euphonic_interface.mltbx

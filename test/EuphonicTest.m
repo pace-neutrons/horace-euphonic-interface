@@ -46,8 +46,12 @@ classdef EuphonicTest < EuphonicTestSuper
             expected_w_mat = cell2mat(expected_w);
             expected_sf_mat = cell2mat(expected_sf);
 
-            testCase.verifyTrue( ...
-                all(ismembertol(w_mat, expected_w_mat, 1e-5), 'all'));
+            import matlab.unittest.constraints.IsEqualTo
+            import matlab.unittest.constraints.AbsoluteTolerance
+            import matlab.unittest.constraints.RelativeTolerance
+            bounds = AbsoluteTolerance(1e-4) | RelativeTolerance(0.01);
+            testCase.verifyThat(w_mat, ...
+                IsEqualTo(expected_w_mat, 'within', bounds));
             % Ignore acoustic structure factors by setting to zero - their
             % values can be unstable at small frequencies
             sf_mat(:, 1:3) = 0;
@@ -61,8 +65,9 @@ classdef EuphonicTest < EuphonicTestSuper
             % Need to sum over degenerate modes to compare structure factors
             sf_summed = sum_degenerate_modes(w_mat, sf_mat);
             expected_sf_summed = sum_degenerate_modes(w_mat, expected_sf_mat);
-            testCase.verifyTrue( ...
-                all(ismembertol(sf_summed, expected_sf_summed, 1e-2), 'all'));
+            bounds = AbsoluteTolerance(0.01) | RelativeTolerance(0.01);
+            testCase.verifyThat(sf_summed, ...
+                IsEqualTo(expected_sf_summed, 'within', bounds));
         end
     end
 end

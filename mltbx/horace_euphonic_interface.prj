@@ -3,48 +3,21 @@
     <param.appname>horace_euphonic_interface</param.appname>
     <param.authnamewatermark>Rebecca Fair</param.authnamewatermark>
     <param.email>rebecca.fair@stfc.ac.uk</param.email>
-    <param.company />
     <param.summary>Interface to a Python code (Euphonic) to calculate phonon spectra from ab initio code outputs.</param.summary>
     <param.description>Interface to a Python code (Euphonic) to calculate phonon spectra from ab initio code outputs.</param.description>
-    <param.screenshot />
     <param.version>1.0</param.version>
     <param.output>./horace_euphonic_interface.mltbx</param.output>
-    <param.products.name />
-    <param.products.id />
-    <param.products.version />
-    <param.platforms />
     <param.guid>6009179d-44d3-4bf6-99a7-0d81cad9e55b</param.guid>
-    <param.exclude.filters />
     <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
-    <param.examples />
-    <param.demosxml />
-    <param.apps />
-    <param.registered.apps />
-    <param.docs />
-    <param.getting.started.guide />
-    <param.matlabpath.excludes />
-    <param.javaclasspath.excludes />
     <param.exported.on.package>false</param.exported.on.package>
-    <param.required.addons />
-    <param.matlab.project.id />
-    <param.matlab.project.name />
-    <param.release.start />
-    <param.release.end />
     <param.release.current.only>false</param.release.current.only>
     <param.compatiblity.windows>true</param.compatiblity.windows>
     <param.compatiblity.macos>true</param.compatiblity.macos>
     <param.compatiblity.linux>true</param.compatiblity.linux>
     <param.compatiblity.matlabonline>true</param.compatiblity.matlabonline>
-    <param.installation.map />
-    <param.additional.sw.names />
-    <param.additional.sw.licenses />
-    <param.additional.sw.win.url />
-    <param.additional.sw.mac.url />
-    <param.additional.sw.linux.url />
     <unset>
       <param.company />
       <param.screenshot />
-      <param.version />
       <param.output />
       <param.products.name />
       <param.products.id />
@@ -79,29 +52,22 @@
       <param.additional.sw.linux.url />
     </unset>
     <fileset.rootdir>
-      <file>.</file>
+      <file>${PROJECT_ROOT}</file>
     </fileset.rootdir>
     <fileset.rootfiles>
-      <file>./+euphonic</file>
-      <file>./+light_python_wrapper</file>
+      <file>${PROJECT_ROOT}/+euphonic</file>
+      <file>${PROJECT_ROOT}/+light_python_wrapper</file>
+      <file>${PROJECT_ROOT}/euphonic_horace</file>
     </fileset.rootfiles>
     <fileset.depfun.included />
     <fileset.depfun.excluded />
     <fileset.package />
     <build-deliverables>
-      <file location="." name="horace_euphonic_interface.mltbx" optional="false">horace_euphonic_interface.mltbx</file>
+      <file location="${PROJECT_ROOT}" name="horace_euphonic_interface.mltbx" optional="false">horace_euphonic_interface.mltbx</file>
     </build-deliverables>
     <workflow />
     <matlab>
       <root>/usr/local/MATLAB/R2020a</root>
-      <toolboxes>
-        <toolbox name="matlabcoder" />
-      </toolboxes>
-      <toolbox>
-        <matlabcoder>
-          <enabled>true</enabled>
-        </matlabcoder>
-      </toolbox>
     </matlab>
     <platform>
       <unix>true</unix>
