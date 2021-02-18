@@ -9,3 +9,4 @@ mltbx/+euphonic/
 mltbx/+light_python_wrapper/
 mltbx/euphonic_horace/
 mltbx/horace_euphonic_interface.mltbx
+test/expected_output/*

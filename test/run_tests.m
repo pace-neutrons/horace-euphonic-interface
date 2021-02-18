@@ -1,3 +1,4 @@
+verify_test_data();
 res = runtests('test/EuphonicTest.m', 'Tag', 'integration');
 passed = [res.Passed];
 if ~all(passed)

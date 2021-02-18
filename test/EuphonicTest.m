@@ -49,7 +49,7 @@ classdef EuphonicTest < EuphonicTestSuper
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             import matlab.unittest.constraints.RelativeTolerance
-            bounds = AbsoluteTolerance(1e-4) | RelativeTolerance(0.01);
+            bounds = AbsoluteTolerance(1e-5) | RelativeTolerance(0.01);
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(expected_w_mat, 'within', bounds));
             % Ignore acoustic structure factors by setting to zero - their
