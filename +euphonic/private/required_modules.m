@@ -1,3 +1,3 @@
 function out = required_modules()
-    out = {'euphonic', '0.3.2'};
+    out = {'euphonic', 'TO_BE_DETERMINED'};
 end

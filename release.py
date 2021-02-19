@@ -6,6 +6,7 @@ import requests
 import subprocess
 import shutil
 import versioneer
+import euphonic_version
 
 __version__ = versioneer.get_version()
 
@@ -17,9 +18,6 @@ def main():
     test = not args.notest
     if args.github:
         release_github(test)
-
-    if args.pypi:
-        release_pypi(test)
 
 
 def release_github(test=True):
@@ -70,24 +68,12 @@ def release_github(test=True):
         print(response.text)
 
 
-def release_pypi(test=True):
-    subprocess.run(['rm','-r','dist'])
-    subprocess.run(['rm','-r','build'])
-    subprocess.run(['python', 'setup.py', 'sdist'])
-    if not test:
-        subprocess.run(['twine', 'upload', 'dist/*'])
-
-
 def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--github',
         action='store_true',
         help='Release on Github')
-    parser.add_argument(
-        '--pypi',
-        action='store_true',
-        help='Release on PyPI')
     parser.add_argument(
         '--notest',
         action='store_true',
@@ -96,7 +82,6 @@ def get_parser():
 
 
 def pull_light_wrapper():
-    import os
     # Checks if the light_python_wrapper submodule has been fetched. If not, get it from github
     if not os.path.isfile('light_python_wrapper/+light_python_wrapper/light_python_wrapper.m'):
         import zipfile, io
@@ -109,7 +94,6 @@ def pull_light_wrapper():
 
 
 def pull_euphonic_horace():
-    import os
     # Checks if the euphonic_horace submodule has been fetched. If not, get it from github
     if not os.path.isfile('euphonic_horace/euphonic_horace/euphonic_wrapper.py'):
         import zipfile, io
@@ -129,11 +113,12 @@ def create_mltbx():
         for line in prj:
             # FileInput redirect stdout to the file, for inplace replacement; end='' means don't add extra newlines
             print(line.replace('<param.version>1.0</param.version>', f'<param.version>{version}</param.version>'), end='')
+    euphonic_version.update_euphonic_version()
     # shutil.copytree expects destination to not exist
     for dest_folder in ['+light_python_wrapper', 'euphonic_horace', '+euphonic']:
         if os.path.isdir('mltbx/' + dest_folder): shutil.rmtree('mltbx/' + dest_folder)
     shutil.copytree('light_python_wrapper/+light_python_wrapper', 'mltbx/+light_python_wrapper')
-    shutil.copytree('euphonic_horace', 'mltbx/euphonic_horace')
+    shutil.copytree('euphonic_horace/euphonic_horace', 'mltbx/euphonic_horace/euphonic_horace')
     shutil.copytree('+euphonic', 'mltbx/+euphonic')
     subprocess.run(['matlab', '-batch', 
                     'matlab.addons.toolbox.packageToolbox("horace_euphonic_interface.prj", "horace_euphonic_interface.mltbx")'],

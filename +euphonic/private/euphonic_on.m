@@ -17,23 +17,13 @@ if isempty(horace_euphonic_interface_is_initialised) || ~horace_euphonic_interfa
     moddir = join([curdir(1:end-2); {'euphonic_horace'}], filesep);
     insert(py.sys.path, int32(0), moddir{1});
     
-    % Check if Euphonic can be loaded
-    try
-        py.importlib.import_module('euphonic');
-    catch ME
-        [ver, ex, isloaded] = pyversion;
-        warning(['Couldn''t import Euphonic Python library. Has it been ' ...
-                 'installed correctly for the currently loaded Python at %s?\n' ...
-                 help_text '\nOriginal error message: %s'], ex, 'euphonic', ME.message);
-    end
-    
     % Check if Euphonic is installed and the correct version
     req_mods = required_modules;
     try
         verify_python_modules(req_mods{:});
     catch ME
-        %if strncmp(ME.message, 'Python Error: DistributionNotFound:')
-        if ~isempty(strfind(ME.message, 'DistributionNotFound'))
+        if ~isempty(strfind(ME.message, 'DistributionNotFound')) ...
+            || ~isempty(strfind(ME.message, 'ModuleNotFoundError')) ...
             modules = join(mod_str(req_mods));
             modules = sprintf('%s', modules{:});
             error(sprintf(['The Python modules required are not installed. ' ... 
@@ -44,9 +34,18 @@ if isempty(horace_euphonic_interface_is_initialised) || ~horace_euphonic_interfa
         end
     end
     
-    help_text = ['If not you can install it using ''pip install %s'' on the command line ' ...
+    % Check if Euphonic can be loaded
+    try
+        py.importlib.import_module('euphonic');
+    catch ME
+        [ver, ex, isloaded] = pyversion;
+        warning(['Couldn''t import Euphonic Python library.\n' ...
+                 'Has it been installed correctly for the currently loaded Python at %s?\n' ...
+                 'If not you can install it using ''pip install %s'' on the command line ' ...
                  'or use the Matlab command ''euphonic.install_python_modules'' included ' ...
-                 'in this package.'];
+                 'in this package.\n' ...
+                 '\nOriginal error message: %s'], ex, 'euphonic', ME.message);
+    end
     
     horace_euphonic_interface_is_initialised = true;
 end
