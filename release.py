@@ -7,6 +7,7 @@ import subprocess
 import shutil
 import versioneer
 import euphonic_version
+import update_dependencies
 
 __version__ = versioneer.get_version()
 
@@ -52,8 +53,8 @@ def release_github(test=True):
         print(response.text)
 
     # Create a Matlab toolbox and upload it
-    pull_light_wrapper()
-    pull_euphonic_horace()
+    update_dependencies.pull_light_wrapper()
+    update_dependencies.pull_euphonic_horace()
     create_mltbx()
     if test:
         print("Would upload mltx to github.")
@@ -79,30 +80,6 @@ def get_parser():
         action='store_true',
         help='Actually send/upload')
     return parser
-
-
-def pull_light_wrapper():
-    # Checks if the light_python_wrapper submodule has been fetched. If not, get it from github
-    if not os.path.isfile('light_python_wrapper/+light_python_wrapper/light_python_wrapper.m'):
-        import zipfile, io
-        gh_zip = 'https://github.com/pace-neutrons/light_python_wrapper/archive/master.zip'
-        zipdata = requests.get(gh_zip, stream=True)
-        zf = zipfile.ZipFile(io.BytesIO(zipdata.content))
-        zf.extractall('.')
-        rtfolder = zf.infolist()[0].filename
-        shutil.copytree(rtfolder+'/+light_python_wrapper', 'light_python_wrapper/+light_python_wrapper')
-
-
-def pull_euphonic_horace():
-    # Checks if the euphonic_horace submodule has been fetched. If not, get it from github
-    if not os.path.isfile('euphonic_horace/euphonic_horace/euphonic_wrapper.py'):
-        import zipfile, io
-        gh_zip = 'https://github.com/pace-neutrons/euphonic_horace/archive/main.zip'
-        zipdata = requests.get(gh_zip, stream=True)
-        zf = zipfile.ZipFile(io.BytesIO(zipdata.content))
-        zf.extractall('.')
-        rtfolder = zf.infolist()[0].filename
-        shutil.copytree(rtfolder+'/euphonic_horace', 'euphonic_horace/euphonic_horace')
 
 
 def create_mltbx():

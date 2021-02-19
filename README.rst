@@ -3,3 +3,44 @@ horace-euphonic-interface
 =========================
 
 See the `docs <https://horace-euphonic-interface.readthedocs.io/en/latest/>`_.
+
+For Linux users, you must set the dlopen flags before running any euphonic commands.
+Run:
+
+.. code-block:: matlab
+
+  py.sys.setdlopenflags(int32(10));
+
+If you don't do this, Matlab will crash the first time a phonon calculation is begun.
+
+This sets the ``RTLD_NOW`` and ``RTLD_DEEPBIND`` flags which is needed to load the
+system BLAS libraries instead of Matlab's included libraries which are not
+compatible with ``numpy``.
+
+
+For developers
+==============
+
+Test data
+---------
+
+Test data is in Matlab ``.mat`` format and generated here 
+but is *stored in the ``euphonic_horace`` repository*.
+
+In case the code changes so as to invalidate the test data, you can 
+generate it using ``runtests('test/EuphonicGenerateTestData.m')`` here.
+Then copy the ``*.mat`` files in ``test/expected_output`` to the
+``euphonic_horace`` repository and commit it.
+
+Since we include ``euphonic_horace`` as a submodule here, it will then
+include the test data which must be the same in both repository.
+
+Euphonic minimum version
+------------------------
+
+The minimum require version of Euphonic is stored in the 
+``min_requirements.txt`` file *of ``euphonic_horace``* (not here).
+Like the test data, this is inherited by this repo as a submodule
+and propagated further.
+
+
