@@ -152,13 +152,14 @@ pipeline {
     post {
 
         success {
-	    script {
+	        script {
                 if (env.AGENT == 'sl7') {
                     script {
                         setGitHubBuildStatus("success", "Successful", "Linux")
                     }
                 }
-    		    if (isUnix()) {
+                // the new .prj file's syntax seems to only work with R2019b
+    		    if (isUnix() && env.MATLAB_VERSION == 'R2019b') {
                             sh """
                                 module load matlab/\$MATLAB_VERSION &&
                                 module load conda/3 &&
@@ -166,18 +167,9 @@ pipeline {
                                 python -m pip install requests
                                 python release.py --github
                             """
-    		    } else {
-                            bat """
-                                CALL conda activate py_%MATLAB_VERSION%
-                                python -m pip install requests
-                                python release.py --github
-                            """
+                            archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
     		    }
-	    }
-        // the new .prj file's syntax seems to only work with R2019b
-        if (env.MATLAB_VERSION == 'R2019b') {
-            archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
-        }
+	        }
         }
 
         unsuccessful {
