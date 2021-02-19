@@ -174,7 +174,10 @@ pipeline {
                             """
     		    }
 	    }
-        archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
+        // the new .prj file's syntax seems to only work with R2019b
+        if (env.MATLAB_VERSION == 'R2019b') {
+            archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
+        }
         }
 
         unsuccessful {
