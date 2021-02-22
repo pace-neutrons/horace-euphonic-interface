@@ -97,9 +97,7 @@ def create_mltbx():
     shutil.copytree('light_python_wrapper/+light_python_wrapper', 'mltbx/+light_python_wrapper')
     shutil.copytree('euphonic_horace/euphonic_horace', 'mltbx/euphonic_horace/euphonic_horace')
     shutil.copytree('+euphonic', 'mltbx/+euphonic')
-    subprocess.run(['matlab', '-batch', 
-                    'matlab.addons.toolbox.packageToolbox("horace_euphonic_interface.prj", "horace_euphonic_interface.mltbx")'],
-                   cwd='mltbx')
+    subprocess.run(['matlab', '-batch', 'create_mltbx'], cwd='mltbx')
 
 
 if __name__ == '__main__':

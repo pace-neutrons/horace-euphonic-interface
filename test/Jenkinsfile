@@ -152,32 +152,32 @@ pipeline {
     post {
 
         success {
-	        script {
+            script {
                 if (env.AGENT == 'sl7') {
-                    script {
-                        setGitHubBuildStatus("success", "Successful", "Linux")
-                    }
+                    setGitHubBuildStatus("success", "Successful", "Linux")
                 }
                 // the new .prj file's syntax seems to only work with R2019b
-    		    if (env.MATLAB_VERSION == 'R2019b') {
-                    if (isUnix()) {
-                            sh """
-                                module load matlab/\$MATLAB_VERSION &&
-                                module load conda/3 &&
-                                conda activate py &&
-                                python -m pip install requests
-                                python release.py --github
-                            """
-    		        } else {
-                            bat """
-                                CALL conda activate py_%MATLAB_VERSION%
-                                python -m pip install requests
-                                python release.py --github
-                            """
+                if (isUnix()) {
+    		        if (env.MATLAB_VERSION == 'R2019b') {
+                        sh """
+                            module load matlab/\$MATLAB_VERSION &&
+                            module load conda/3 &&
+                            conda activate py &&
+                            python -m pip install requests
+                            python release.py --github
+                        """
+                        archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                     }
-                    archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
-    		    }
-	        }
+		        } else {
+                        bat """
+                            CALL conda activate py_%MATLAB_VERSION%
+                            python -m pip install requests
+                            setx PATH "%PATH%;C:\\Programming\\Matlab%MATLAB_VERSION%\\bin\\"
+                            python release.py --github
+                        """
+                        archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
+                }
+		    }
         }
 
         unsuccessful {
