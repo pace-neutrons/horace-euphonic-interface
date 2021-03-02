@@ -12,66 +12,73 @@ data from phonons in `Horace <https://horace.isis.rl.ac.uk/>`_ using
 General Installation
 --------------------
 
-First ensure you have both Horace and Euphonic installed:
+1. Prerequisites
+^^^^^^^^^^^^^^^^
+Ensure you have both Horace and Euphonic installed:
 
 - `Horace docs <https://horace.isis.rl.ac.uk/>`_ 
 - `Euphonic docs <https://euphonic.readthedocs.io>`_
 
+2. Set up Python in Matlab
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Now download the required files from Github:
-
-.. code-block:: bash
-
-  git clone https://github.com/pace-neutrons/horace-euphonic-interface.git
-
-
-Then add the ``horace-euphonic-interface`` folder to the MATLAB search path.
-
-.. code-block:: matlab
-
-  >> addpath('/path/to/horace-euphonic-interface')
-
-The Python executable that you installed Euphonic with also needs to be
-specified in MATLAB. You can find the executable location in Python with:
+The Python executable that you installed Euphonic with needs to be specified
+in MATLAB. You can find the executable location in Python with:
 
 .. code-block:: python
 
   >>> import sys
   >>> print(sys.executable)
 
-You can then set this executable in MATLAB using:
+You can then set this executable in MATLAB (2019b or later) using:
+
+.. code-block:: MATLAB
+
+  >> pyenv('Version', '/path/to/python')
+
+Or in MATLAB 2019a or earlier:
 
 .. code-block:: MATLAB
 
   >> pyversion('/path/to/python')
 
-.. note::
+.. Note::
 
-  **Running on Linux**
+  The Python version used in Matlab can only be changed if it has not yet been
+  loaded. If you have already installed Horace-Euphonic-Interface, Python might
+  be automatically loaded on startup. To prevent this, disable
+  Horace-Euphonic-Interface first in **Add-Ons > Manage Add-Ons** then click the
+  :math:`\vdots` symbol to the right of the add-on to bring up the settings,
+  and untick the **Enabled** box, then restart Matlab. Python will no longer be
+  loaded. Remember to re-enable Horace-Euphonic-Interface afterwards.
 
-  If running on Linux, the following must also be set from MATLAB to avoid
-  clashes between Python/MATLAB mathematics libraries:
+3. Download and Install
+^^^^^^^^^^^^^^^^^^^^^^^
 
-  .. code-block:: MATLAB
+**Latest version (recommended)**
 
-    >> py.sys.setdlopenflags(int32(10));
+Horace-Euphonic-Interface is packaged as a Matlab toolbox (``.mltbx``), which
+allows easy installation from a single file as a Matlab Add-On. In Matlab,
+go to the **Home** tab, and in the **Environment** section, click **Add-Ons**,
+and then **Get Add-Ons**. Search for **horace-euphonic-interface**, select it
+and then click **Add > Add to MATLAB**. That's it!
 
-  This must be done **before** Python has been loaded in MATLAB (use
-  ``pyversion`` to see if Python is already loaded). The only way to unload
-  Python once it has been loaded is to restart MATLAB
+See `here <https://www.mathworks.com/help/matlab/matlab_env/get-add-ons.html>`_
+for more information on Matlab Add-Ons.
 
-Now that the MATLAB path and pyversion have been set up, test the installation
-in MATLAB using:
+**Older versions**
+
+The ``.mltbx`` file for each release is also available at
+https://github.com/pace-neutrons/horace-euphonic-interface/releases.
+Open the ``.mltbx`` file in Matlab and it should automatically be installed.
+
+4. Test installation
+^^^^^^^^^^^^^^^^^^^^
+To test everything has been installed ok, try:
 
 .. code-block:: matlab
 
-  >> euphonic_on
-
-If there are no warnings everything should be installed correctly.
-
-The above commands can be added to a
-`startup.m <https://www.mathworks.com/help/matlab/ref/startup.html>`_ file so
-they are executed automatically at the start of every MATLAB session
+  >> help(euphonic.ForceConstants)
 
 IDAaaS Installation
 -------------------
@@ -85,57 +92,55 @@ your ``startup.m``:
 
   addpath('/usr/local/mprogs/horace-euphonic-interface')
   pyversion '/usr/local/virtualenvs/euphonicenv/bin/python3'
-  py.sys.setdlopenflags(int32(10))
-  euphonic_on
-
-That's it!
 
 Usage
 -----
 
-In Horace, the ``disp2sqw_eval`` simulation function is used to simulate
-experimental data with Euphonic - this requires a function handle, to use
-Euphonic this is ``euphonic_sf``. For information on ``euphonic_sf``
-parameters, type:
+Quick Guide
+^^^^^^^^^^^
+
+To view the available functions and classes, try:
 
 .. code-block:: matlab
 
-  >> help euphonic_sf
+  help euphonic
 
-Many of the parameters are passed straight to Euphonic, so see the Euphonic
-docs for more details.
+**1. Read force constants**
 
-An example script simulating a simple cut is below:
+First, the force constants must be read. The usage is very similar to Euphonic,
+for example to read a CASTEP ``.castep_bin`` file:
 
 .. code-block:: matlab
 
-  % Read in experimental cut
-  cut = read_horace('quartz.d2d');
+  fc = euphonic.ForceConstants.from_castep('quartz.castep_bin')
 
-  % Set required parameters
-  fwhh = 4.0;
-  temperature = 5;
-  scale = 1.0;
-  par = [temperature, scale];
-  scattering_lengths = struct('Si', 4.1491, 'O', 5.803);
+Or, to read from Phonopy files:
 
-  % Set extra parameters
-  opts = {'model_args', {'quartz.castep_bin'}, ...
-          'phonon_kwargs', {'asr', 'reciprocal', 'reduce_qpts', true, ...
-                            'use_c', true, 'n_threads', int32(2), ...
-                            'eta_scale', 0.75}, ...
-          'dw_grid', [6,6,6], ...
-          'conversion_mat', [1,0,0; 0,1,0; 0,0,-1], 
-          'negative_e', true, ...
-          'chunk', 5000, ...
-          'lim', 1e-7};
+.. code-block:: matlab
 
-  % Finally simulate
-  cut_sim = disp2sqw_eval( ...
-      cut, @euphonic_sf, {par, scattering_lengths, opts}, fwhh, 'all');
+  fc = euphonic.ForceConstants.from_castep('path', 'phonopy.yaml')
 
-  % Plot
-  plot(cut_sim);
+**2. Set up model**
+
+Next, the model must be set up. Currently, the ``CoherentCrystal`` model
+is available. The force constants must be passed in, then any other optional
+parameters. For example:
+
+.. code-block:: matlab
+
+  coh_model = euphonic.CoherentCrystal(...
+     fc, ...
+     'conversion_mat', [1 0 0; 0 1 0; 0 0 -1],
+     'debye_waller_grid', [6 6 6], ...
+     'temperature', 100, ...
+     'asr', 'reciprocal', ...
+     'use_c', true);
+
+To see all the available optional parameters, try:
+
+.. code-block:: matlab
+
+  help(euphonic.CoherentCrystal)
 
 .. note::
 
@@ -148,6 +153,52 @@ An example script simulating a simple cut is below:
   set incorrectly, the results will not make sense (or worse, may happen to
   make sense at first in certain cuts due to symmetry, but give incorrect
   results in other cuts later on!)
+
+**3. Simulate cut**
+
+In Horace, the ``disp2sqw_eval`` simulation function is used to simulate
+experimental data with Euphonic. This requires a function handle, which is provided
+by ``CoherentCrystal.horace_disp``:
+
+.. code-block:: matlab
+
+  scale_factor = 1e12;
+  effective_fwhm = 1;
+
+  cut_sim = disp2sqw_eval(cut, @coh_model.horace_disp, {scale_factor}, effective_fwhm);
+
+
+Full Example
+^^^^^^^^^^^^
+
+An example script simulating a simple cut is below:
+
+.. code-block:: matlab
+
+  % Read in experimental cut
+  cut = read_horace('quartz.d2d');
+
+  % Read force constants
+  fc = euphonic.ForceConstants.from_castep('quartz.castep_bin')
+
+  % Set up model
+  coh_model = euphonic.CoherentCrystal(...
+     fc, ...
+     'conversion_mat', [1 0 0; 0 1 0; 0 0 -1],
+     'debye_waller_grid', [6 6 6], ...
+     'temperature', 100, ...
+     'asr', 'reciprocal', ...
+     'use_c', true);
+
+
+  % Simulate
+  scale_factor = 1e12;
+  effective_fwhm = 1;
+  cut_sim = disp2sqw_eval(...
+     cut, @coh_model.horace_disp, {scale_factor}, effective_fwhm);
+
+  % Plot
+  plot(cut_sim);
 
 .. toctree::
    :hidden:
