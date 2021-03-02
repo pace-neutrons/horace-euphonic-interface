@@ -5,10 +5,10 @@ import fileinput
 def get_euphonic_version():
     # gets the required euphonic version from `min_requirements.txt` file
     curdir = os.path.dirname(os.path.abspath(__file__))
-    req_file = os.path.join(curdir, 'euphonic_horace', 'min_requirements.txt')
+    req_file = os.path.join(curdir, 'euphonic_sqw_models', 'min_requirements.txt')
     if not os.path.isfile(req_file):
         import update_dependencies
-        update_dependencies.pull_euphonic_horace()
+        update_dependencies.pull_euphonic_sqw_models()
     with open(req_file, 'r') as minreq:
         verstr = [req for req in minreq if 'euphonic' in req]
     return verstr[0].split('=')[1].strip()

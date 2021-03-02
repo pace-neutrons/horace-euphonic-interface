@@ -9,12 +9,12 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
         % Constructor
         function obj = CoherentCrystal(varargin)
             euphonic_on();
-            eu = py.importlib.import_module('euphonic_horace');
+            eu = py.importlib.import_module('euphonic_sqw_models');
             obj.helpref = eu.CoherentCrystal;
             % Allow empty constructor for help function
             if ~isempty(varargin)
                 args = light_python_wrapper.light_python_wrapper.parse_args(varargin, py.getattr(eu.CoherentCrystal, '__init__'));
-                obj.pyobj = py.euphonic_horace.CoherentCrystal(args{:});
+                obj.pyobj = py.euphonic_sqw_models.CoherentCrystal(args{:});
                 obj.populate_props();
             end
             obj.overrides = {'horace_disp'};

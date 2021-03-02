@@ -12,9 +12,9 @@ if isempty(horace_euphonic_interface_is_initialised) || ~horace_euphonic_interfa
         py.sys.setdlopenflags(int32(10));
     end
     
-    % Adds the euphonic_horace submodule to the python path
+    % Adds the euphonic_sqw_models submodule to the python path
     curdir = split(fileparts(mfilename('fullpath')), filesep);
-    moddir = join([curdir(1:end-2); {'euphonic_horace'}], filesep);
+    moddir = join([curdir(1:end-2); {'euphonic_sqw_models'}], filesep);
     insert(py.sys.path, int32(0), moddir{1});
     
     % Check if Euphonic is installed and the correct version

@@ -6,14 +6,14 @@ function verify_test_data()
     if exist([testdr{1} filesep 'nacl_T300.mat'], 'file')
         return
     end
-    submod = join([curdir(1:end-1); {'euphonic_horace'}], filesep);
+    submod = join([curdir(1:end-1); {'euphonic_sqw_models'}], filesep);
     if ~exist([submod{1} filesep 'test' filesep 'expected_output'], 'dir')
         websave('main.zip', ... 
-            'https://github.com/pace-neutrons/euphonic_horace/archive/main.zip');
+            'https://github.com/pace-neutrons/euphonic_sqw_models/archive/main.zip');
         unzip('main.zip', 'main');
         dd = dir('main');
         for ii = 1:numel(dd)
-            if strfind(dd(ii).name, 'euphonic_horace');
+            if strfind(dd(ii).name, 'euphonic_sqw_models');
                 copyfile(char(join({'main' dd(ii).name '*'}, filesep)), submod{1});
                 break;
             end

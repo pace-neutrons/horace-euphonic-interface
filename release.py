@@ -54,7 +54,7 @@ def release_github(test=True):
 
     # Create a Matlab toolbox and upload it
     update_dependencies.pull_light_wrapper()
-    update_dependencies.pull_euphonic_horace()
+    update_dependencies.pull_euphonic_sqw_models()
     create_mltbx()
     if test:
         print("Would upload mltx to github.")
@@ -92,10 +92,10 @@ def create_mltbx():
             print(line.replace('<param.version>1.0</param.version>', f'<param.version>{version}</param.version>'), end='')
     euphonic_version.update_euphonic_version()
     # shutil.copytree expects destination to not exist
-    for dest_folder in ['+light_python_wrapper', 'euphonic_horace', '+euphonic']:
+    for dest_folder in ['+light_python_wrapper', 'euphonic_sqw_models', '+euphonic']:
         if os.path.isdir('mltbx/' + dest_folder): shutil.rmtree('mltbx/' + dest_folder)
     shutil.copytree('light_python_wrapper/+light_python_wrapper', 'mltbx/+light_python_wrapper')
-    shutil.copytree('euphonic_horace/euphonic_horace', 'mltbx/euphonic_horace/euphonic_horace')
+    shutil.copytree('euphonic_sqw_models/euphonic_sqw_models', 'mltbx/euphonic_sqw_models/euphonic_sqw_models')
     shutil.copytree('+euphonic', 'mltbx/+euphonic')
     subprocess.run(['matlab', '-batch', 'create_mltbx'], cwd='mltbx')
 

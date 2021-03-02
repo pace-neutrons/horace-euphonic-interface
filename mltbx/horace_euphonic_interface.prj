@@ -57,7 +57,7 @@
     <fileset.rootfiles>
       <file>${PROJECT_ROOT}/+euphonic</file>
       <file>${PROJECT_ROOT}/+light_python_wrapper</file>
-      <file>${PROJECT_ROOT}/euphonic_horace</file>
+      <file>${PROJECT_ROOT}/euphonic_sqw_models</file>
     </fileset.rootfiles>
     <fileset.depfun.included />
     <fileset.depfun.excluded />
