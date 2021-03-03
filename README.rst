@@ -4,20 +4,6 @@ horace-euphonic-interface
 
 See the `docs <https://horace-euphonic-interface.readthedocs.io/en/latest/>`_.
 
-For Linux users, you must set the dlopen flags before running any euphonic commands.
-Run:
-
-.. code-block:: matlab
-
-  py.sys.setdlopenflags(int32(10));
-
-If you don't do this, Matlab will crash the first time a phonon calculation is begun.
-
-This sets the ``RTLD_NOW`` and ``RTLD_DEEPBIND`` flags which is needed to load the
-system BLAS libraries instead of Matlab's included libraries which are not
-compatible with ``numpy``.
-
-
 For developers
 ==============
 
@@ -39,8 +25,6 @@ Euphonic minimum version
 ------------------------
 
 The minimum require version of Euphonic is stored in the 
-``min_requirements.txt`` file *of ``euphonic_sqw_models``* (not here).
+``min_requirements.txt`` file of ``euphonic_sqw_models`` (not here).
 Like the test data, this is inherited by this repo as a submodule
 and propagated further.
-
-
