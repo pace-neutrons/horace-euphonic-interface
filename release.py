@@ -4,14 +4,18 @@ import os
 import re
 import requests
 import subprocess
+import shutil
+import versioneer
+import euphonic_version
+import update_dependencies
 
-from get_hor_eu_interface_version import get_version
-
+__version__ = versioneer.get_version()
 
 def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    print(args)
     test = not args.notest
     if args.github:
         release_github(test)
@@ -20,10 +24,11 @@ def main():
 def release_github(test=True):
     with open('CHANGELOG.rst') as f:
         changelog = f.read()
-    hor_eu_interface_ver = 'v' + get_version()
+    hor_eu_interface_ver = 'v' + __version__
     changelog_ver = re.findall('`?(v\d+\.\d+\.\S+)\s', changelog)[0]
     if hor_eu_interface_ver != changelog_ver:
-        raise Exception((
+        #raise Exception((
+        print((
             f'VERSION and CHANGELOG.rst version mismatch!\n'
             f'VERSION: {hor_eu_interface_ver}\nCHANGELOG.rst: '
             f'{changelog_ver}'))
@@ -47,6 +52,22 @@ def release_github(test=True):
             headers={"Authorization": "token " + os.environ["GITHUB_TOKEN"]})
         print(response.text)
 
+    # Create a Matlab toolbox and upload it
+    update_dependencies.pull_light_wrapper()
+    update_dependencies.pull_euphonic_sqw_models()
+    create_mltbx()
+    if test:
+        print("Would upload mltx to github.")
+    else:
+        upload_url = response.json().get('upload_url')
+        response = requests.post(
+            upload_url,
+            data = open('mltbx/horace_euphonic_interface.mltbx', 'rb'),
+            headers = {"Content-Type": 'application/octet-stream', 
+                       "Authorization": "token " + os.environ["GITHUB_TOKEN"]},
+        )
+        print(response.text)
+
 
 def get_parser():
     parser = argparse.ArgumentParser()
@@ -61,5 +82,24 @@ def get_parser():
     return parser
 
 
+def create_mltbx():
+    import fileinput
+    # replace version string
+    version = __version__.split('+')[0] if '+' in __version__ else __version__  # Matlab only accepts numbers
+    with fileinput.FileInput('mltbx/horace_euphonic_interface.prj', inplace=True) as prj:
+        for line in prj:
+            # FileInput redirect stdout to the file, for inplace replacement; end='' means don't add extra newlines
+            print(line.replace('<param.version>1.0</param.version>', f'<param.version>{version}</param.version>'), end='')
+    euphonic_version.update_euphonic_version()
+    # shutil.copytree expects destination to not exist
+    for dest_folder in ['+light_python_wrapper', 'euphonic_sqw_models', '+euphonic']:
+        if os.path.isdir('mltbx/' + dest_folder): shutil.rmtree('mltbx/' + dest_folder)
+    shutil.copytree('light_python_wrapper/+light_python_wrapper', 'mltbx/+light_python_wrapper')
+    shutil.copytree('euphonic_sqw_models/euphonic_sqw_models', 'mltbx/euphonic_sqw_models/euphonic_sqw_models')
+    shutil.copytree('+euphonic', 'mltbx/+euphonic')
+    subprocess.run(['matlab', '-batch', 'create_mltbx'], cwd='mltbx')
+
+
 if __name__ == '__main__':
     main()
+

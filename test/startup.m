@@ -1,4 +1,5 @@
 addpath('..')
+addpath('../light_python_wrapper')
 if ispc
     ver = version('-release');
     if ver == '2019b'
@@ -12,4 +13,3 @@ else
     pyversion '/home/jenkins/.conda/envs/py/bin/python'
     py.sys.setdlopenflags(int32(10))
 end
-euphonic_on

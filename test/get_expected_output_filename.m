@@ -2,7 +2,7 @@ function fname = get_expected_output_filename(material_name, pars, opts)
     fname = material_name;
     fname = [fname '_T' string(pars(1))];
 
-    idx = find(strcmp('dw_grid', opts));
+    idx = find(strcmp('debye_waller_grid', opts));
     if length(idx) == 1
         grid = opts(idx + 1);
         fname = [fname '_dw' string(grid{:})];
