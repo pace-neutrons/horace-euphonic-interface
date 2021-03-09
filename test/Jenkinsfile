@@ -89,18 +89,20 @@ pipeline {
                 script {
 		    if (env.AGENT == 'sl7') {
                         setGitHubBuildStatus("pending", "Starting", "Linux")
-                    } else if (!isUnix()){
-                        checkout scm
-                        bat 'git submodule update --init'
-		    }
+                    }
                 }
 	    }
         }
 
         stage("Set up") {
             steps {
-	        dir('euphonic_sqw_models') {
-                    script {
+                script {
+                    if (isUnix()) {
+                        sh 'git submodule update --init'
+                    } else {
+                        bat 'git submodule update --init'
+                    }
+                    dir('euphonic_sqw_models') {
                         if (isUnix()) {
                             sh """
                                 git submodule update --init
