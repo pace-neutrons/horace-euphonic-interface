@@ -102,6 +102,7 @@ pipeline {
                 script {
                     if (isUnix()) {
                         sh """
+                            git submodule update --init
                             module load conda/3 &&
                             module load gcc &&
                             export CC=gcc
@@ -110,8 +111,7 @@ pipeline {
                             conda activate py &&
                             python -m pip install --upgrade --user pip &&
                             python -m pip install numpy &&
-                            python -m pip install euphonic[phonopy_reader]
-                            git submodule update --init
+                            python euphonic_sqw_models/apply_requirements.py
                         """
                     } else {
                         bat """
@@ -120,7 +120,7 @@ pipeline {
                             CALL conda activate py_%MATLAB_VERSION%
                             python -m pip install --upgrade --user pip
                             python -m pip install numpy
-                            python -m pip install euphonic[phonopy_reader]
+                            python euphonic_sqw_models/apply_requirements.py
                         """
 		    }
                 }
