@@ -99,31 +99,33 @@ pipeline {
 
         stage("Set up") {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh """
-                            git submodule update --init
-                            module load conda/3 &&
-                            module load gcc &&
-                            export CC=gcc
-                            conda config --append channels free &&
-                            conda create --name py python=3.6 -y &&
-                            conda activate py &&
-                            python -m pip install --upgrade --user pip &&
-                            python -m pip install numpy &&
-                            python euphonic_sqw_models/apply_requirements.py
-                        """
-                    } else {
-                        bat """
-                            CALL conda remove --name py_%MATLAB_VERSION% --all
-                            CALL conda create --name py_%MATLAB_VERSION% python=3.6 -y
-                            CALL conda activate py_%MATLAB_VERSION%
-                            python -m pip install --upgrade --user pip
-                            python -m pip install numpy
-                            python euphonic_sqw_models/apply_requirements.py
-                        """
-		    }
-                }
+	        dir('euphonic_sqw_models') {
+                    script {
+                        if (isUnix()) {
+                            sh """
+                                git submodule update --init
+                                module load conda/3 &&
+                                module load gcc &&
+                                export CC=gcc
+                                conda config --append channels free &&
+                                conda create --name py python=3.6 -y &&
+                                conda activate py &&
+                                python -m pip install --upgrade --user pip &&
+                                python -m pip install numpy &&
+                                python apply_requirements.py
+                            """
+                        } else {
+                            bat """
+                                CALL conda remove --name py_%MATLAB_VERSION% --all
+                                CALL conda create --name py_%MATLAB_VERSION% python=3.6 -y
+                                CALL conda activate py_%MATLAB_VERSION%
+                                python -m pip install --upgrade --user pip
+                                python -m pip install numpy
+                                python apply_requirements.py
+                            """
+                        }
+                    }
+		}
             }
         }
 
