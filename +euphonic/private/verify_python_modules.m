@@ -65,24 +65,32 @@ end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function ret = semver_compatible(astr, bstr)
-a = semver_split(astr);
-b = semver_split(bstr);
-if a(1) == b(1) && (a(2) > b(2) || (a(2)==b(2) && a(3)>=b(3)))
-  ret = true;
-else
+function ret = semver_compatible(ver_str, req_ver_str)
+  ver = semver_split(ver_str);
+  req_ver = semver_split(req_ver_str);
+
   ret = false;
-end
+  if ver.major == req_ver.major
+    if ver.minor > req_ver.minor
+      ret = true;
+    elseif ver.minor == req_ver.minor && ver.patch >= req_ver.patch
+      if isempty(req_ver.pre) || req_ver.pre == '>' && ~isempty(ver.extra)
+        ret = true;
+      end
+    end
+  end
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function v = semver_split(str)
-rM   =       '^(?<major>0|[1-9]\d*)';
+function vs = semver_split(str)
+rM   =       '^(?<pre>.*?)(?<major>0|[1-9]\d*)';
 rMm  = [rM  '\.(?<minor>0|[1-9]\d*)'];
 rMmp = [rMm '\.(?<patch>0|[1-9]\d*)'];
+rMmpx = [rMmp '(?<extra>.*)$'];
 
-if regexp(str, rMmp)
-  vs = regexp(str, rMmp, 'names');
+if regexp(str, rMmpx)
+  vs = regexp(str, rMmpx, 'names');
 elseif regexp(str, rMm)
   vs = regexp(str, rMm , 'names');
   vs.patch = '0';
@@ -91,6 +99,4 @@ elseif regexp(str, rM)
   vs.minor = '0';
   vs.patch = '0';
 end
-
-v = structfun(@str2num, vs);
 end
