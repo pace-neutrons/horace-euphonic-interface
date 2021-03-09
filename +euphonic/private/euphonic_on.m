@@ -3,9 +3,6 @@ function euphonic_on()
 global horace_euphonic_interface_is_initialised;
 if isempty(horace_euphonic_interface_is_initialised) || ~horace_euphonic_interface_is_initialised
  
-    % Set number of openblas threads to 1 so it doesn't interfere with openmp
-    setenv('OPENBLAS_NUM_THREADS', '1');
-    
     % Sets library opening flag on Linux to load C modules immediately and to
     % force Matlab to use the math libraries of this module instead of its own.
     if ~ispc
