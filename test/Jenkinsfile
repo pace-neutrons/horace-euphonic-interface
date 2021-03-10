@@ -85,13 +85,13 @@ pipeline {
     stages {
 
         stage("Notify") {
-	    steps {
+            steps {
                 script {
-		    if (env.AGENT == 'sl7') {
+                    if (env.AGENT == 'sl7') {
                         setGitHubBuildStatus("pending", "Starting", "Linux")
                     }
                 }
-	    }
+            }
         }
 
         stage("Set up") {
@@ -127,27 +127,27 @@ pipeline {
                             """
                         }
                     }
-		}
+                }
             }
         }
 
         stage("Test") {
             steps {
-	        script {
-		    if (isUnix()) {
+                script {
+                    if (isUnix()) {
                         sh """
                             module load matlab/\$MATLAB_VERSION &&
                             module load conda/3 &&
                             cd test &&
                             matlab -nosplash -nodesktop -batch "run('run_tests.m')"
                         """
-		    } else {
+                    } else {
                         bat """
                             CALL conda activate py_%MATLAB_VERSION%
-			    cd test
-			    "C:\\Programming\\Matlab%MATLAB_VERSION%\\bin\\matlab.exe" -nosplash -nodesktop -wait -batch "run('run_tests.m')"
+                            cd test
+                            "C:\\Programming\\Matlab%MATLAB_VERSION%\\bin\\matlab.exe" -nosplash -nodesktop -wait -batch "run('run_tests.m')"
                         """
-		    }
+                    }
                 }
             }
         }
@@ -162,7 +162,7 @@ pipeline {
                 }
                 // the new .prj file's syntax seems to only work with R2019b
                 if (isUnix()) {
-    		        if (env.MATLAB_VERSION == 'R2019b') {
+                    if (env.MATLAB_VERSION == 'R2019b') {
                         sh """
                             module load matlab/\$MATLAB_VERSION &&
                             module load conda/3 &&
@@ -172,7 +172,7 @@ pipeline {
                         """
                         archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                     }
-		        } else {
+                } else {
                         bat """
                             CALL conda activate py_%MATLAB_VERSION%
                             python -m pip install requests
@@ -181,27 +181,27 @@ pipeline {
                         """
                         archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                 }
-		    }
+            }
         }
 
         unsuccessful {
-	    script {
+            script {
                 if (env.AGENT == 'sl7') {
                     setGitHubBuildStatus("failure", "Unsuccessful", "Linux")
                 }
-	    }
+            }
             script {
-	        if (isUnix()) {
+                if (isUnix()) {
                     def email = getGitCommitAuthorEmail()
-	        } else {
+                } else {
                     def email = getGitCommitAuthorEmailWindows()
-	        }
+                }
                 mail (
                     to: "$email",
                     subject: "Linux failed pipeline: ${env.JOB_BASE_NAME}",
                     body: "See ${env.BUILD_URL}"
                 )
-	    }
+            }
         }
 
         cleanup {
