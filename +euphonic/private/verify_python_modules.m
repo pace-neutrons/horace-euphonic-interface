@@ -73,9 +73,13 @@ function ret = semver_compatible(ver_str, req_ver_str)
   if ver.major == req_ver.major
     if ver.minor > req_ver.minor
       ret = true;
-    elseif ver.minor == req_ver.minor && ver.patch >= req_ver.patch
-      if isempty(req_ver.pre) || req_ver.pre == '>' && ~isempty(ver.extra)
+    elseif ver.minor == req_ver.minor
+      if ver.patch > req_ver.patch
         ret = true;
+      elseif ver.patch == req_ver.patch
+        if isempty(req_ver.pre) || req_ver.pre == '>' && ~isempty(ver.extra)
+          ret = true;
+        end
       end
     end
   end
@@ -93,10 +97,12 @@ if regexp(str, rMmpx)
   vs = regexp(str, rMmpx, 'names');
 elseif regexp(str, rMm)
   vs = regexp(str, rMm , 'names');
-  vs.patch = '0';
 elseif regexp(str, rM)
   vs = regexp(str, rM  , 'names');
-  vs.minor = '0';
-  vs.patch = '0';
 end
+
+if ~isfield(vs, 'minor') vs.minor = '0', end
+if ~isfield(vs, 'patch') vs.patch = '0', end
+if ~isfield(vs, 'extra') vs.extra = '', end
+
 end
