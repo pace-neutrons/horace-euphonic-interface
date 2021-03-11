@@ -26,7 +26,7 @@ def getGitCommitAuthorEmail() {
             script: """
                 echo "\$(\\
                     curl -s -H "Authorization: token ${api_token}" \\
-                    --request GET https://api.github.com/repos/pace-neutrons/horace-euphonic-interface/git/commits/${env.GIT_COMMIT} |  jq '.author.email' | tr -d '"'\\
+                    --request GET https://api.github.com/repos/pace-neutrons/horace-euphonic-interface/commits/${env.GIT_COMMIT} |  jq '.commit.author.email' | tr -d '"'\\
                 )"
             """,
             returnStdout: true
@@ -40,16 +40,11 @@ def getGitCommitAuthorEmailWindows() {
         return powershell(
             script: """
                 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
-                \$branch_details = Invoke-RestMethod -URI "https://api.github.com/repos/pace-neutrons/Euphonic/git/ref/heads/${env.JOB_BASE_NAME}" \
+                \$commit_details = Invoke-RestMethod -URI "https://api.github.com/repos/pace-neutrons/horace-euphonic-interface/commits/${env.GIT_COMMIT}" \
                     -Headers @{Authorization = "token ${api_token}"} \
                     -Method 'GET' \
                     -ContentType "application/json"
-                \$latest_commit_url = \$branch_details.object.url
-                \$commit_details = Invoke-RestMethod -URI "\$latest_commit_url" \
-                    -Headers @{Authorization = "token ${api_token}"} \
-                    -Method 'GET' \
-                    -ContentType "application/json"
-                \$commit_author_email = \$commit_details.author.email
+                \$commit_author_email = \$commit_details.commit.author.email
                 echo "\$commit_author_email"
             """,
             returnStdout: true
@@ -190,14 +185,15 @@ pipeline {
                 }
             }
             script {
+	        def email
                 if (isUnix()) {
-                    def email = getGitCommitAuthorEmail()
+                    email = getGitCommitAuthorEmail()
                 } else {
-                    def email = getGitCommitAuthorEmailWindows()
+                    email = getGitCommitAuthorEmailWindows()
                 }
                 mail (
-                    to: "$email",
-                    subject: "Linux failed pipeline: ${env.JOB_BASE_NAME}",
+                    to: "${email}",
+                    subject: "Failed pipeline: ${env.JOB_BASE_NAME}",
                     body: "See ${env.BUILD_URL}"
                 )
             }
