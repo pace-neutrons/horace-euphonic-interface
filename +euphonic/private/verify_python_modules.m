@@ -101,8 +101,8 @@ elseif regexp(str, rM)
   vs = regexp(str, rM  , 'names');
 end
 
-if ~isfield(vs, 'minor') vs.minor = '0', end
-if ~isfield(vs, 'patch') vs.patch = '0', end
-if ~isfield(vs, 'extra') vs.extra = '', end
+if ~isfield(vs, 'minor') vs.minor = '0'; end
+if ~isfield(vs, 'patch') vs.patch = '0'; end
+if ~isfield(vs, 'extra') vs.extra = ''; end
 
 end
