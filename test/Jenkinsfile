@@ -1,6 +1,6 @@
 #!groovy
 
-def setGitHubBuildStatus(String status, String message, String context) {
+def setGitHubBuildStatus(String status, String message) {
     script {
         withCredentials([string(credentialsId: 'GitHub_API_Token',
                 variable: 'api_token')]) {
@@ -9,9 +9,9 @@ def setGitHubBuildStatus(String status, String message, String context) {
                 --request POST \
                 --data '{ \
                     "state": "${status}", \
-                    "description": "${message} on ${context}", \
+                    "description": "${message} on ${env.JOB_BASE_NAME}", \
                     "target_url": "$BUILD_URL", \
-                    "context": "jenkins/${context}" \
+                    "context": "${env.JOB_BASE_NAME}" \
                 }' \
                 https://api.github.com/repos/pace-neutrons/horace-euphonic-interface/statuses/${env.GIT_COMMIT}
             """
@@ -88,7 +88,7 @@ pipeline {
             steps {
                 script {
                     if (env.AGENT == 'sl7') {
-                        setGitHubBuildStatus("pending", "Starting", "Linux")
+                        setGitHubBuildStatus("pending", "Starting")
                     }
                 }
             }
@@ -157,7 +157,7 @@ pipeline {
         success {
             script {
                 if (env.AGENT == 'sl7') {
-                    setGitHubBuildStatus("success", "Successful", "Linux")
+                    setGitHubBuildStatus("success", "Successful")
                 }
                 // the new .prj file's syntax seems to only work with R2019b
                 if (isUnix()) {
@@ -186,7 +186,7 @@ pipeline {
         unsuccessful {
             script {
                 if (env.AGENT == 'sl7') {
-                    setGitHubBuildStatus("failure", "Unsuccessful", "Linux")
+                    setGitHubBuildStatus("failure", "Unsuccessful")
                 }
             }
             script {
