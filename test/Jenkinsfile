@@ -85,65 +85,68 @@ pipeline {
     stages {
 
         stage("Notify") {
-	    steps {
+            steps {
                 script {
-		    if (env.AGENT == 'sl7') {
+                    if (env.AGENT == 'sl7') {
                         setGitHubBuildStatus("pending", "Starting", "Linux")
-                    } else if (!isUnix()){
-                        checkout scm
-                        bat 'git submodule update --init'
-		    }
+                    }
                 }
-	    }
+            }
         }
 
         stage("Set up") {
             steps {
                 script {
                     if (isUnix()) {
-                        sh """
-                            module load conda/3 &&
-                            module load gcc &&
-                            export CC=gcc
-                            conda config --append channels free &&
-                            conda create --name py python=3.6 -y &&
-                            conda activate py &&
-                            python -m pip install --upgrade --user pip &&
-                            python -m pip install numpy &&
-                            python -m pip install euphonic[phonopy_reader]
-                            git submodule update --init
-                        """
+                        sh 'git submodule update --init'
                     } else {
-                        bat """
-                            CALL conda remove --name py_%MATLAB_VERSION% --all
-                            CALL conda create --name py_%MATLAB_VERSION% python=3.6 -y
-                            CALL conda activate py_%MATLAB_VERSION%
-                            python -m pip install --upgrade --user pip
-                            python -m pip install numpy
-                            python -m pip install euphonic[phonopy_reader]
-                        """
-		    }
+                        bat 'git submodule update --init'
+                    }
+                    dir('euphonic_sqw_models') {
+                        if (isUnix()) {
+                            sh """
+                                module load conda/3 &&
+                                module load gcc &&
+                                export CC=gcc
+                                conda config --append channels free &&
+                                conda create --name py python=3.6 -y &&
+                                conda activate py &&
+                                python -m pip install --upgrade --user pip &&
+                                python -m pip install numpy &&
+                                python apply_requirements.py
+                            """
+                        } else {
+                            bat """
+                                CALL conda remove --name py_%MATLAB_VERSION% --all
+                                CALL conda create --name py_%MATLAB_VERSION% python=3.6 -y
+                                CALL conda activate py_%MATLAB_VERSION%
+                                python -m pip install --upgrade --user pip
+                                python -m pip install numpy
+                                python apply_requirements.py
+                            """
+                        }
+                    }
                 }
             }
         }
 
         stage("Test") {
             steps {
-	        script {
-		    if (isUnix()) {
+                script {
+                    if (isUnix()) {
                         sh """
                             module load matlab/\$MATLAB_VERSION &&
                             module load conda/3 &&
                             cd test &&
                             matlab -nosplash -nodesktop -batch "run('run_tests.m')"
                         """
-		    } else {
+                    } else {
                         bat """
                             CALL conda activate py_%MATLAB_VERSION%
-			    cd test
-			    "C:\\Programming\\Matlab%MATLAB_VERSION%\\bin\\matlab.exe" -nosplash -nodesktop -wait -batch "run('run_tests.m')"
+                            cd test
+                            "C:\\Programming\\Matlab%MATLAB_VERSION%\\bin\\matlab.exe" -nosplash -nodesktop -wait -batch "run('run_tests.m')"
                         """
-		    }
+                    }
                 }
             }
         }
@@ -158,7 +161,7 @@ pipeline {
                 }
                 // the new .prj file's syntax seems to only work with R2019b
                 if (isUnix()) {
-    		        if (env.MATLAB_VERSION == 'R2019b') {
+                    if (env.MATLAB_VERSION == 'R2019b') {
                         sh """
                             module load matlab/\$MATLAB_VERSION &&
                             module load conda/3 &&
@@ -168,7 +171,7 @@ pipeline {
                         """
                         archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                     }
-		        } else {
+                } else {
                         bat """
                             CALL conda activate py_%MATLAB_VERSION%
                             python -m pip install requests
@@ -177,27 +180,27 @@ pipeline {
                         """
                         archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                 }
-		    }
+            }
         }
 
         unsuccessful {
-	    script {
+            script {
                 if (env.AGENT == 'sl7') {
                     setGitHubBuildStatus("failure", "Unsuccessful", "Linux")
                 }
-	    }
+            }
             script {
-	        if (isUnix()) {
+                if (isUnix()) {
                     def email = getGitCommitAuthorEmail()
-	        } else {
+                } else {
                     def email = getGitCommitAuthorEmailWindows()
-	        }
+                }
                 mail (
                     to: "$email",
                     subject: "Linux failed pipeline: ${env.JOB_BASE_NAME}",
                     body: "See ${env.BUILD_URL}"
                 )
-	    }
+            }
         }
 
         cleanup {
