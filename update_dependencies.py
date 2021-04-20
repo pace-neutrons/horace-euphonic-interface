@@ -30,8 +30,19 @@ def pull_euphonic_sqw_models():
         shutil.copyfile(rtfolder+'/min_requirements.txt', 'euphonic_sqw_models/min_requirements.txt')
 
 
-def update_submodules():
-    cmd = 'git submodule update --init'
-    print(cmd)
-    ret = subprocess.run(cmd)
-    ret.check_returncode()
+def update_submodules(submodule=None):
+    submodules = {
+            'euphonic_sqw_models':
+                {'required_path': 'euphonic_sqw_models/euphonic_sqw_models/euphonic_wrapper.py'},
+            'light_python_wrapper':
+                {'required_path': 'light_python_wrapper/+light_python_wrapper/light_python_wrapper.m'}}
+    if submodule is not None:
+        submodules = {submodule: submodules[submodule]}
+    for key, val in submodules.items():
+        if not os.path.isfile(val['required_path']):
+            cmd = 'git submodule update --init ' + key
+            print(cmd)
+            ret = subprocess.run(cmd)
+            ret.check_returncode()
+        else:
+            print(f"{val['required_path']} already present, not updating {key}")
