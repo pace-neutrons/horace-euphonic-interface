@@ -20,15 +20,31 @@ def main():
     if args.github:
         release_github(test)
 
+def check_submodule_version(submodule):
+    """
+    Check release version of Horace-Euphonic-Interface depends
+    on release versions of submodules
+    """
+    ret = subprocess.run('git tag --points-at HEAD',
+                         cwd=submodule,
+                         capture_output=True)
+    ver = ret.stdout.decode('utf-8').strip()
+    if ver == '':
+        raise Exception(f'Submodule {submodule} is not a tagged (release) '
+                        f'version. A release version of Horace-Euphonic-Interface '
+                        f'should depend on release versions of its submodules')
 
 def release_github(test=True):
+    submodules = ['light_python_wrapper', 'euphonic_sqw_models']
+    for submodule in submodules:
+        check_submodule_version(submodule)
+
     with open('CHANGELOG.rst') as f:
         changelog = f.read()
     hor_eu_interface_ver = 'v' + __version__
     changelog_ver = re.findall('`?(v\d+\.\d+\.\S+)\s', changelog)[0]
     if hor_eu_interface_ver != changelog_ver:
-        #raise Exception((
-        print((
+        raise Exception((
             f'VERSION and CHANGELOG.rst version mismatch!\n'
             f'VERSION: {hor_eu_interface_ver}\nCHANGELOG.rst: '
             f'{changelog_ver}'))
