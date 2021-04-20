@@ -7,7 +7,7 @@ import subprocess
 import shutil
 import versioneer
 import euphonic_version
-import update_dependencies
+from update_dependencies import update_submodules
 
 __version__ = versioneer.get_version()
 
@@ -16,12 +16,11 @@ def main():
     args = parser.parse_args()
     print(args)
 
+    update_submodules()
     if args.github:
         args.create_toolbox = True
 
     if args.create_toolbox:
-        update_dependencies.pull_light_wrapper()
-        update_dependencies.pull_euphonic_sqw_models()
         create_mltbx()
 
     test = not args.notest

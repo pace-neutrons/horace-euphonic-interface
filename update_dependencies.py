@@ -3,6 +3,7 @@ import io
 import zipfile
 import requests
 import shutil
+import subprocess
 
 
 def pull_light_wrapper():
@@ -29,3 +30,8 @@ def pull_euphonic_sqw_models():
         shutil.copyfile(rtfolder+'/min_requirements.txt', 'euphonic_sqw_models/min_requirements.txt')
 
 
+def update_submodules():
+    cmd = 'git submodule update --init'
+    print(cmd)
+    ret = subprocess.run(cmd)
+    ret.check_returncode()
