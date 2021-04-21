@@ -26,7 +26,8 @@ def get_euphonic_version():
 
 def update_euphonic_version():
     curdir = os.path.dirname(os.path.abspath(__file__))
+    ver = get_euphonic_version()
     with fileinput.FileInput(curdir+'/+euphonic/private/required_modules.m', inplace=True) as reqmod:
         for line in reqmod:
             # FileInput redirect stdout to the file, for inplace replacement; end='' means don't add extra newlines
-            print(line.replace('TO_BE_DETERMINED', f'{get_euphonic_version()}'), end='')
+            print(line.replace('TO_BE_DETERMINED', f'{ver}'), end='')
