@@ -31,11 +31,16 @@ def pull_euphonic_sqw_models():
 
 
 def update_submodules(submodule=None):
+    curdir = os.path.dirname(os.path.abspath(__file__))
     submodules = {
             'euphonic_sqw_models':
-                {'required_path': 'euphonic_sqw_models/euphonic_sqw_models/euphonic_wrapper.py'},
+                {'required_path': os.path.join(
+                    curdir,
+                    os.path.join('euphonic_sqw_models', 'euphonic_sqw_models', 'euphonic_wrapper.py'))},
             'light_python_wrapper':
-                {'required_path': 'light_python_wrapper/+light_python_wrapper/light_python_wrapper.m'}}
+                {'required_path': os.path.join(
+                    curdir,
+                    os.path.join('light_python_wrapper', '+light_python_wrapper', 'light_python_wrapper.m'))}}
     if submodule is not None:
         submodules = {submodule: submodules[submodule]}
     for key, val in submodules.items():
