@@ -1,13 +1,13 @@
 import os
 import fileinput
 
-from update_dependencies import update_submodules
-
 def get_euphonic_version():
-    update_submodules('euphonic_sqw_models')
     # gets the required euphonic version from `min_requirements.txt` file
     curdir = os.path.dirname(os.path.abspath(__file__))
     req_file = os.path.join(curdir, 'euphonic_sqw_models', 'min_requirements.txt')
+    if not os.path.isfile(req_file):
+        from update_dependencies import update_submodules
+        update_submodules('euphonic_sqw_models')
     with open(req_file, 'r') as minreq:
         verstr = [req for req in minreq if 'euphonic' in req]
         if len(verstr) != 1:
