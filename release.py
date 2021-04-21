@@ -69,13 +69,13 @@ def release_github(test=True):
     with open('CHANGELOG.rst') as f:
         changelog = f.read()
     hor_eu_interface_ver = 'v' + __version__
-    changelog_ver = re.findall('`?(v\d+\.\d+\.\S+)\s', changelog)[0]
+    changelog_ver = re.findall('\n`(v\d+\.\d+\.\S+)\s', changelog)[0]
     if hor_eu_interface_ver != changelog_ver:
         raise Exception((
             f'VERSION and CHANGELOG.rst version mismatch!\n'
             f'VERSION: {hor_eu_interface_ver}\nCHANGELOG.rst: '
             f'{changelog_ver}'))
-    desc = re.search('`v\d+\.\d+\.\S+.*?^-+\n(.*)', changelog,
+    desc = re.search('`v\d+\.\d+\.\S+.*?^-+\n(.*)^`v', changelog,
                      re.DOTALL | re.MULTILINE).groups()[0].strip()
 
     payload = {
