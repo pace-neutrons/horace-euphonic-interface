@@ -1,14 +1,13 @@
 import os
 import fileinput
 
-
 def get_euphonic_version():
     # gets the required euphonic version from `min_requirements.txt` file
     curdir = os.path.dirname(os.path.abspath(__file__))
     req_file = os.path.join(curdir, 'euphonic_sqw_models', 'min_requirements.txt')
     if not os.path.isfile(req_file):
-        import update_dependencies
-        update_dependencies.pull_euphonic_sqw_models()
+        from update_dependencies import update_submodules
+        update_submodules('euphonic_sqw_models')
     with open(req_file, 'r') as minreq:
         verstr = [req for req in minreq if 'euphonic' in req]
         if len(verstr) != 1:
@@ -27,7 +26,8 @@ def get_euphonic_version():
 
 def update_euphonic_version():
     curdir = os.path.dirname(os.path.abspath(__file__))
+    ver = get_euphonic_version()
     with fileinput.FileInput(curdir+'/+euphonic/private/required_modules.m', inplace=True) as reqmod:
         for line in reqmod:
             # FileInput redirect stdout to the file, for inplace replacement; end='' means don't add extra newlines
-            print(line.replace('TO_BE_DETERMINED', f'{get_euphonic_version()}'), end='')
+            print(line.replace('TO_BE_DETERMINED', f'{ver}'), end='')

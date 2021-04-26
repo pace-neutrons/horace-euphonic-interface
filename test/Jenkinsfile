@@ -162,7 +162,7 @@ pipeline {
                             module load conda/3 &&
                             conda activate py &&
                             python -m pip install requests
-                            python release.py --github
+                            python release.py --create-toolbox
                         """
                         archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                     }
@@ -171,7 +171,7 @@ pipeline {
                             CALL conda activate py_%MATLAB_VERSION%
                             python -m pip install requests
                             setx PATH "%PATH%;C:\\Programming\\Matlab%MATLAB_VERSION%\\bin\\"
-                            python release.py --github
+                            python release.py --create-toolbox
                         """
                         archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                 }
