@@ -59,6 +59,9 @@ def create_mltbx():
     shutil.copytree('+euphonic', 'mltbx/+euphonic')
     subprocess.run(['matlab', '-batch', 'create_mltbx'], cwd='mltbx')
     print('.mltbx created')
+    # Remove working changes because this would bump the versioneer version to .dirty
+    subprocess.run('git restore +euphonic/private/required_modules.m')
+    subprocess.run('git restore mltbx/horace_euphonic_interface.prj')
 
 
 def release_github(test=True):
