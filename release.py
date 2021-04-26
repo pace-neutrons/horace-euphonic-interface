@@ -59,9 +59,6 @@ def create_mltbx():
     shutil.copytree('+euphonic', 'mltbx/+euphonic')
     subprocess.run(['matlab', '-batch', 'create_mltbx'], cwd='mltbx')
     print('.mltbx created')
-    # Remove working changes because this would bump the versioneer version to .dirty
-    subprocess.run('git restore +euphonic/private/required_modules.m')
-    subprocess.run('git restore mltbx/horace_euphonic_interface.prj')
 
 
 def release_github(test=True):
@@ -71,6 +68,10 @@ def release_github(test=True):
 
     with open('CHANGELOG.rst') as f:
         changelog = f.read()
+    # Remove working changes caused by .mltbx creation because this would
+    # bump the versioneer version to .dirty
+    subprocess.run('git restore +euphonic/private/required_modules.m')
+    subprocess.run('git restore mltbx/horace_euphonic_interface.prj')
     hor_eu_interface_ver = 'v' + __version__
     changelog_ver = re.findall('\n`(v\d+\.\d+\.\S+)\s', changelog)[0]
     if hor_eu_interface_ver != changelog_ver:
@@ -101,11 +102,13 @@ def release_github(test=True):
     # Upload Matlab toolbox
     if not test:
         upload_url = response.json().get('upload_url')
+        fname = 'horace_euphonic_interface.mltbx'
         response = requests.post(
             upload_url,
-            data = open('mltbx/horace_euphonic_interface.mltbx', 'rb'),
-            headers = {"Content-Type": 'application/octet-stream', 
-                       "Authorization": "token " + os.environ["GITHUB_TOKEN"]},
+            data=open(os.path.join('mltbx', fname), 'rb'),
+            params=(('name', fname),),
+            headers={"Content-Type": 'application/octet-stream',
+                     "Authorization": "token " + os.environ["GITHUB_TOKEN"]},
         )
         print(response.text)
 
