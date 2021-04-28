@@ -79,7 +79,7 @@ def release_github(test=True):
             f'VERSION and CHANGELOG.rst version mismatch!\n'
             f'VERSION: {hor_eu_interface_ver}\nCHANGELOG.rst: '
             f'{changelog_ver}'))
-    desc = re.search('`v\d+\.\d+\.\S+.*?^-+\n(.*)^`v', changelog,
+    desc = re.search('`v\d+\.\d+\.\S+.*?^-+\n(.*?)^`v', changelog,
                      re.DOTALL | re.MULTILINE).groups()[0].strip()
 
     payload = {

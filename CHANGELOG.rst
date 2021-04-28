@@ -1,5 +1,10 @@
-`Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.0...HEAD>`_
+`Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.1...HEAD>`_
 ----------
+
+`v0.2.1 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.0...v0.2.1>`_
+----------
+
+This release has no code changes, this update is only to fix the .mltbx upload to the MATLAB File Exchange
 
 `v0.2.0 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.1.0...v0.2.0>`_
 ----------
