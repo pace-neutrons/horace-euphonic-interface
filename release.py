@@ -101,7 +101,7 @@ def release_github(test=True):
 
     # Upload Matlab toolbox
     if not test:
-        upload_url = response.json().get('upload_url')
+        upload_url = response.json().get('upload_url').split('{')[0]
         fname = 'horace_euphonic_interface.mltbx'
         response = requests.post(
             upload_url,
