@@ -83,14 +83,15 @@ To test everything has been installed ok, try:
 IDAaaS Installation
 -------------------
 
-Euphonic is already installed in a Python virtual environment at
+Euphonic is installed in a Python virtual environment at
 ``/usr/local/virtualenvs/euphonicenv`` and ``horace-euphonic-interface``
-is available at ``/usr/local/mprogs``. To make use of these, add the following to
-your ``startup.m``:
+is already installed in Matlab as an add-on. To use Horace-Euphonic-Interface,
+you just have to make sure the Python version you are using in Matlab has
+a compatible version of Euphonic installed. To do this, just add the following
+to your ``startup.m``:
 
 .. code-block:: matlab
 
-  addpath('/usr/local/mprogs/horace-euphonic-interface')
   pyversion '/usr/local/virtualenvs/euphonicenv/bin/python3'
 
 Usage
