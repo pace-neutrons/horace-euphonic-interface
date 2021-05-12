@@ -92,7 +92,8 @@ to your ``startup.m``:
 
 .. code-block:: matlab
 
-  pyversion '/usr/local/virtualenvs/euphonicenv/bin/python3'
+  pyenv('Version', '/usr/local/virtualenvs/euphonicenv/bin/python3');
+  py.sys.setdlopenflags(int32(10));
 
 Usage
 -----
