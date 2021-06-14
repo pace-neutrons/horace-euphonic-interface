@@ -10,6 +10,7 @@ classdef ForceConstants < light_python_wrapper.light_python_wrapper
         % Constructor
         function obj = ForceConstants(varargin)
             euphonic_on();
+            light_python_wrapper.light_python_wrapper.redirect_python_warnings();
             obj.eu = py.importlib.import_module('euphonic');
             obj.helpref = obj.eu.ForceConstants;
             if ~isempty(varargin)

@@ -9,6 +9,7 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
         % Constructor
         function obj = CoherentCrystal(varargin)
             euphonic_on();
+            light_python_wrapper.light_python_wrapper.redirect_python_warnings();
             eu = py.importlib.import_module('euphonic_sqw_models');
             obj.helpref = eu.CoherentCrystal;
             % Allow empty constructor for help function
