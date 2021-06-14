@@ -154,6 +154,31 @@ pipeline {
                 if (env.AGENT == 'sl7') {
                     setGitHubBuildStatus("success", "Successful")
                 }
+            }
+        }
+        unsuccessful {
+            script {
+                if (env.AGENT == 'sl7') {
+                    setGitHubBuildStatus("failure", "Unsuccessful")
+                }
+            }
+            script {
+                def email
+                if (isUnix()) {
+                    email = getGitCommitAuthorEmail()
+                } else {
+                    email = getGitCommitAuthorEmailWindows()
+                }
+                mail (
+                    to: "${email}",
+                    subject: "Failed pipeline: ${env.JOB_BASE_NAME}",
+                    body: "See ${env.BUILD_URL}"
+                )
+            }
+        }
+        // Always publish toolbox - useful for debugging and integration testing
+        always {
+            script {
                 // the new .prj file's syntax seems to only work with R2019b
                 if (isUnix()) {
                     if (env.MATLAB_VERSION == 'R2019b') {
@@ -177,28 +202,6 @@ pipeline {
                 }
             }
         }
-
-        unsuccessful {
-            script {
-                if (env.AGENT == 'sl7') {
-                    setGitHubBuildStatus("failure", "Unsuccessful")
-                }
-            }
-            script {
-	        def email
-                if (isUnix()) {
-                    email = getGitCommitAuthorEmail()
-                } else {
-                    email = getGitCommitAuthorEmailWindows()
-                }
-                mail (
-                    to: "${email}",
-                    subject: "Failed pipeline: ${env.JOB_BASE_NAME}",
-                    body: "See ${env.BUILD_URL}"
-                )
-            }
-        }
-
         cleanup {
             deleteDir()
         }
