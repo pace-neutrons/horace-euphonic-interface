@@ -1,6 +1,17 @@
 `Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.2...HEAD>`_
 ----------
 
+- Dependency changes:
+
+ - Euphonic version dependency increased from >=0.5.0 to >=0.6.0
+
+- Other changes:
+
+ - The ``eta_scale`` keyword argument to ``CoherentCrystal`` has been deprecated,
+   ``dipole_parameter`` should be used instead
+ - A Python ValueError will now be raised if an unrecognised keyword argument is
+   passed to ``CoherentCrystal``
+
 `v0.2.2 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.1...v0.2.2>`_
 ------
 
