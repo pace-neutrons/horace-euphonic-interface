@@ -40,8 +40,7 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
 
             opts = {};
             % Only add values to opts if they aren't missing
-            opts_keys = {'debye_waller_grid', 'bose', 'negative_e', 'conversion_mat', ...
-                         'lim'};
+            opts_keys = {'debye_waller_grid', 'bose', 'negative_e', 'conversion_mat'};
             opts_values = {dw_grid, bose, negative_e, conversion_mat, lim};
             for i=1:length(opts_keys)
                 if ~ismissing(opts_values{i})
