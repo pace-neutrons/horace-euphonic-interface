@@ -5,6 +5,14 @@
 
  - Euphonic version dependency increased from >=0.5.0 to >=0.6.0
 
+- Breaking changes:
+
+  - The default units of ``StructureFactor.structure_factors`` in Euphonic have been
+    changed from ``angstrom**2`` per unit cell to ``mbarn`` per sample atom, and are
+    now in absolute units including a previously omitted 1/2 factor. So the structure
+    factors produced by ``CoherentCrystal.horace_disp`` have increased by a factor of
+    ``1e11/(2*N_atoms)``
+
 - Other changes:
 
  - The ``eta_scale`` keyword argument to ``CoherentCrystal`` has been deprecated,

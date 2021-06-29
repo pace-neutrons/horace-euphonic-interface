@@ -19,7 +19,7 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
         bose = {missing, false};
         negative_e = {missing, true};
         conversion_mat =  {missing, (1/2)*[-1, 1, 1; 1, -1, 1; 1, 1, -1]};
-        lim = {missing, 1e-9};
+        lim = {missing, 1e2};
     end
 
     methods (TestClassSetup)
@@ -40,8 +40,7 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
 
             opts = {};
             % Only add values to opts if they aren't missing
-            opts_keys = {'debye_waller_grid', 'bose', 'negative_e', 'conversion_mat', ...
-                         'lim'};
+            opts_keys = {'debye_waller_grid', 'bose', 'negative_e', 'conversion_mat', 'lim'};
             opts_values = {dw_grid, bose, negative_e, conversion_mat, lim};
             for i=1:length(opts_keys)
                 if ~ismissing(opts_values{i})

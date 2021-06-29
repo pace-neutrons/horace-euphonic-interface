@@ -164,7 +164,7 @@ by ``CoherentCrystal.horace_disp``:
 
 .. code-block:: matlab
 
-  scale_factor = 1e12;
+  scale_factor = 2e2;
   effective_fwhm = 1;
 
   cut_sim = disp2sqw_eval(cut, @coh_model.horace_disp, {scale_factor}, effective_fwhm);
@@ -194,7 +194,7 @@ An example script simulating a simple cut is below:
 
 
   % Simulate
-  scale_factor = 1e12;
+  scale_factor = 2e2;
   effective_fwhm = 1;
   cut_sim = disp2sqw_eval(...
      cut, @coh_model.horace_disp, {scale_factor}, effective_fwhm);
