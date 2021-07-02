@@ -1,9 +1,12 @@
-`Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.2...HEAD>`_
+`Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.0...HEAD>`_
 ----------
+
+`v0.3.0 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.2...v0.3.0>`_
+------
 
 - Dependency changes:
 
- - Euphonic version dependency increased from >=0.5.0 to >=0.6.0
+  - Euphonic version dependency increased from >=0.5.0 to >=0.6.0
 
 - Breaking changes:
 
@@ -15,10 +18,10 @@
 
 - Other changes:
 
- - The ``eta_scale`` keyword argument to ``CoherentCrystal`` has been deprecated,
-   ``dipole_parameter`` should be used instead
- - A Python ValueError will now be raised if an unrecognised keyword argument is
-   passed to ``CoherentCrystal``
+  - The ``eta_scale`` keyword argument to ``CoherentCrystal`` has been deprecated,
+    ``dipole_parameter`` should be used instead
+  - A Python ValueError will now be raised if an unrecognised keyword argument is
+    passed to ``CoherentCrystal``
 
 `v0.2.2 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.1...v0.2.2>`_
 ------
@@ -40,24 +43,24 @@ object-oriented.
 
 - Dependency changes:
 
- - Euphonic version dependency increased to >=0.5.0
+  - Euphonic version dependency increased to >=0.5.0
 
 - Installation changes:
 
- - Horace-euphonic-interface is now distributed as a Matlab toolbox (``.mltbx``)
-   which is available in the `Matlab File Exchange <https://www.mathworks.com/matlabcentral/fileexchange/>`_ as an Add-On
+  - Horace-euphonic-interface is now distributed as a Matlab toolbox (``.mltbx``)
+    which is available in the `Matlab File Exchange <https://www.mathworks.com/matlabcentral/fileexchange/>`_ as an Add-On
 
 - Usage changes:
 
- - ``euphonic_sf`` has been removed
- - ``euphonic_on`` has been removed
- - Force constants are now a separate object (``ForceConstants``) rather than
-   passing these arguments to ``euphonic_sf``
- - The model parameters are set in a ``CoherentCrystal`` model object, rather than
-   passing these parameters to ``euphonic_sf``
- - The function handle to be passed to ``disp2sqw_eval`` is ``CoherentCrystal.horace_disp`` rather than ``euphonic_sf``
- - The ``dw_grid`` argument has been renamed to ``debye_waller_grid``
- - ``fall_back_on_python`` argument has been removed as this has been removed in Euphonic
+  - ``euphonic_sf`` has been removed
+  - ``euphonic_on`` has been removed
+  - Force constants are now a separate object (``ForceConstants``) rather than
+    passing these arguments to ``euphonic_sf``
+  - The model parameters are set in a ``CoherentCrystal`` model object, rather than
+    passing these parameters to ``euphonic_sf``
+  - The function handle to be passed to ``disp2sqw_eval`` is ``CoherentCrystal.horace_disp`` rather than ``euphonic_sf``
+  - The ``dw_grid`` argument has been renamed to ``debye_waller_grid``
+  - ``fall_back_on_python`` argument has been removed as this has been removed in Euphonic
 
 For more detailed help see the `documentation <https://horace-euphonic-interface.readthedocs.io/en/latest/>`_
 
