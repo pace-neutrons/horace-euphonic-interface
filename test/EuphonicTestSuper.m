@@ -40,8 +40,9 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
 
             opts = {};
             % Only add values to opts if they aren't missing
-            opts_keys = {'debye_waller_grid', 'bose', 'negative_e', 'conversion_mat', 'lim'};
-            opts_values = {dw_grid, bose, negative_e, conversion_mat, lim};
+            opts_keys = {'debye_waller_grid', 'bose', 'negative_e', ...
+                         'conversion_mat', 'lim', 'temperature'};
+            opts_values = {dw_grid, bose, negative_e, conversion_mat, lim, temp};
             for i=1:length(opts_keys)
                 if ~ismissing(opts_values{i})
                     opts = [opts {opts_keys{i}, opts_values{i}}];
@@ -49,7 +50,7 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
             end
 
             testCase.qpts = qpts;
-            testCase.pars = [temp scale];
+            testCase.pars = [scale];
             testCase.scattering_lengths = scattering_lengths;
             testCase.opts = opts;
             testCase.material_name = materials{1};

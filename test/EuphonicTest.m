@@ -15,7 +15,6 @@ classdef EuphonicTest < EuphonicTestSuper
     methods (TestMethodSetup, ParameterCombination='sequential')
         function set_euphonic_sf_args(testCase, use_c, n_threads, chunk)
             opts = testCase.opts;
-            pars = testCase.pars;
             phonon_kwargs = {'asr', 'reciprocal', ...
                              'use_c', use_c, ...
                              'n_threads', n_threads};
@@ -24,7 +23,6 @@ classdef EuphonicTest < EuphonicTestSuper
                 opts = [opts {'chunk', chunk}];
             end
             opts = [opts {'scattering_lengths', testCase.scattering_lengths}];
-            opts = [opts {'temperature', pars(1)}];
             
             testCase.euphonic_sf_args = opts;
         end
@@ -36,12 +34,12 @@ classdef EuphonicTest < EuphonicTestSuper
                                                    testCase.euphonic_sf_args{:});
             qpts = testCase.qpts;
             [w, sf] = coherentsqw.horace_disp(qpts(:, 1), qpts(:, 2), qpts(:, 3), ...
-                                              testCase.pars(2));
+                                              testCase.pars);
             w_mat = transpose(cell2mat(w'));
             sf_mat = transpose(cell2mat(sf'));
 
             fname = get_expected_output_filename(testCase.material_name, ...
-                                                 testCase.pars, testCase.opts);
+                                                 testCase.opts);
             load(fname, 'expected_w', 'expected_sf');
             expected_w_mat = cell2mat(expected_w);
             expected_sf_mat = cell2mat(expected_sf);
