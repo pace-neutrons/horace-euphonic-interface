@@ -21,7 +21,20 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
             obj.overrides = {'horace_disp'};
         end
         function out = horace_disp(self, qh, qk, ql, pars, varargin)
-            % Overrides Python function to do chunking in Matlab to print messages.
+            % Overrides Python function to do chunking in Matlab to print messages
+
+            % If varargin assume named arguments, pass as Python kwargs
+            if ~isempty(varargin)
+                kwarg_pairs = [pars, varargin];
+                kwargs = pyargs(kwarg_pairs{:});
+                args = {};
+            else
+            % If a single array of parameters, pass as positional
+            % arguments
+                args = num2cell(pars);
+                kwargs = pyargs();
+            end
+
             horace_disp = py.getattr(self.pyobj, 'horace_disp');
             chunk_size = double(self.pyobj.chunk);
             lqh = numel(qh);
@@ -33,7 +46,7 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
                     qi = (ii-1)*chunk_size + 1;
                     qf = min([ii*chunk_size lqh]);
                     fprintf('Using Euphonic to interpolate for q-points %d:%d out of %d\n', qi, qf, lqh);
-                    pyout = cat(1, pyout, light_python_wrapper.p2m(horace_disp(qh(qi:qf), qk(qi:qf), ql(qi:qf), pars, varargin{:})));
+                    pyout = cat(1, pyout, light_python_wrapper.p2m(horace_disp(qh(qi:qf), qk(qi:qf), ql(qi:qf), args{:}, kwargs)));
                 end
                 self.pyobj.chunk = chunk_size;
                 for jj = 1:2
@@ -43,7 +56,7 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
                     end
                 end
             else
-                out = light_python_wrapper.p2m(horace_disp(qh, qh, qk, pars, varargin{:}));
+                out = light_python_wrapper.p2m(horace_disp(qh, qh, qk, args{:}, kwargs));
             end
         end
     end
