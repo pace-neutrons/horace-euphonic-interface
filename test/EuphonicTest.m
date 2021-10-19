@@ -33,8 +33,7 @@ classdef EuphonicTest < EuphonicTestSuper
             coherentsqw = euphonic.CoherentCrystal(testCase.force_constants, ...
                                                    testCase.euphonic_sf_args{:});
             qpts = testCase.qpts;
-            [w, sf] = coherentsqw.horace_disp(qpts(:, 1), qpts(:, 2), qpts(:, 3), ...
-                                              testCase.pars);
+            [w, sf] = coherentsqw.horace_disp(qpts(:, 1), qpts(:, 2), qpts(:, 3), {});
             w_mat = transpose(cell2mat(w'));
             sf_mat = transpose(cell2mat(sf'));
 

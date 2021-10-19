@@ -36,7 +36,6 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
                      1.0, -1.0, -1.0];
             scattering_lengths = struct('La', 8.24, 'Zr', 7.16, 'O', 5.803, ...
                                         'Si', 4.1491, 'Na', 3.63, 'Cl', 9.577);
-            scale = 1.0;
 
             opts = {};
             % Only add values to opts if they aren't missing
@@ -50,7 +49,6 @@ classdef EuphonicTestSuper < matlab.mock.TestCase
             end
 
             testCase.qpts = qpts;
-            testCase.pars = [scale];
             testCase.scattering_lengths = scattering_lengths;
             testCase.opts = opts;
             testCase.material_name = materials{1};
