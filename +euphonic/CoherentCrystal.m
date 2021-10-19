@@ -25,9 +25,21 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
 
             % If varargin assume named arguments, pass as Python kwargs
             if ~isempty(varargin)
-                kwarg_pairs = [pars, varargin];
-                kwargs = pyargs(kwarg_pairs{:});
-                args = {};
+                if ischar(pars) || isstring(pars)
+                    % Assume if first arg is a string, it's all kwargs
+                    kwarg_pairs = [pars, varargin];
+                    kwargs = pyargs(kwarg_pairs{:});
+                    args = {};
+                elseif ~any(cellfun(@ischar, varargin)) && ...
+                        ~any(cellfun(@isstring, varargin))
+                    % If there is no string in varargin, 
+                    % assume it's all positional args
+                    kwargs = pyargs();
+                    args = {pars varargin{:}};
+                else
+                    kwargs = pyargs(varargin{:});
+                    args = {pars};
+                end
             else
             % If a single array of parameters, pass as positional
             % arguments
