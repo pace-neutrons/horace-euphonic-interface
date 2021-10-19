@@ -23,28 +23,27 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
         function out = horace_disp(self, qh, qk, ql, pars, varargin)
             % Overrides Python function to do chunking in Matlab to print messages
 
-            % If varargin assume named arguments, pass as Python kwargs
+            args = {};
+            kwargs = pyargs();
             if ~isempty(varargin)
-                if ischar(pars) || isstring(pars)
-                    % Assume if first arg is a string, it's all kwargs
-                    kwarg_pairs = [pars, varargin];
-                    kwargs = pyargs(kwarg_pairs{:});
-                    args = {};
-                elseif ~any(cellfun(@ischar, varargin)) && ...
-                        ~any(cellfun(@isstring, varargin))
-                    % If there is no string in varargin, 
-                    % assume it's all positional args
-                    kwargs = pyargs();
-                    args = {pars varargin{:}};
+                all_args = [pars, varargin];
+                % Find first occurence of str/char - assume everything before
+                % is positional args, everything after is kwargs
+                is_str = cellfun(@isstring, all_args);
+                if ~any(is_str)
+                    is_str = cellfun(@ischar, all_args);
+                end
+                str_idx = find(is_str==1);
+                if isempty(str_idx)
+                    % No strings - all positional
+                    args = all_args;
                 else
-                    kwargs = pyargs(varargin{:});
-                    args = {pars};
+                    args = all_args(1:str_idx(1) - 1);
+                    kwargs = pyargs(all_args{str_idx(1):end});
                 end
             else
-            % If a single array of parameters, pass as positional
-            % arguments
+                % If no varargin, assume all positional arguments
                 args = num2cell(pars);
-                kwargs = pyargs();
             end
 
             horace_disp = py.getattr(self.pyobj, 'horace_disp');
