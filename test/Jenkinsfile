@@ -1,5 +1,9 @@
 #!groovy
 
+@Library('PACE-shared-lib') import pace.common.PipeLineInfo
+
+pli = new PipeLineInfo(env.JOB_BASE_NAME)
+
 def setGitHubBuildStatus(String status, String message) {
     script {
         withCredentials([string(credentialsId: 'GitHub_API_Token',
@@ -52,9 +56,31 @@ def getGitCommitAuthorEmailWindows() {
     }
 }
 
+properties([
+    parameters([
+        string(
+            defaultValue: '',
+            description: 'The version of Matlab to use e.g. 2019b.',
+            name: 'MATLAB_VERSION',
+            trim: true
+        ),
+        string(
+            defaultValue: utilities.get_agent(pli.os),
+            description: 'The agent to execute the pipeline on.',
+            name: 'AGENT',
+            trim: true
+        )
+    ])
+])
+
 pipeline {
 
     agent { label env.AGENT }
+
+    environment {
+        MATLAB_VERSION = utilities.get_param('MATLAB_VERSION', pli.matlab_release.replace('R', ''))
+        CONDA_ENV_NAME = "py36_horace_euphonic_interface_${env.MATLAB_VERSION}"
+    }
 
     triggers {
         GenericTrigger(
@@ -89,6 +115,19 @@ pipeline {
             }
         }
 
+        stage("Get-PACE-jenkins-shared-library") {
+            steps {
+                dir('PACE-jenkins-shared-library') {
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "refs/heads/main"]],
+                        extensions: [[$class: 'WipeWorkspace']],
+                        userRemoteConfigs: [[url: 'https://github.com/pace-neutrons/PACE-jenkins-shared-library.git']]
+                    ])
+                }
+            }
+        }
+
         stage("Set up") {
             steps {
                 script {
@@ -102,20 +141,18 @@ pipeline {
                             sh """
                                 module load conda/3 &&
                                 module load gcc &&
-                                export CC=gcc
-                                conda config --append channels free &&
-                                conda create --name py python=3.6 -y &&
-                                conda activate py &&
-                                python -m pip install --upgrade --user pip &&
+                                conda create --name \$CONDA_ENV_NAME python=3.6 -y &&
+                                conda activate \$CONDA_ENV_NAME &&
+                                python -m pip install --upgrade pip &&
                                 python -m pip install numpy &&
                                 python apply_requirements.py
                             """
                         } else {
+                            powershell '../PACE-jenkins-shared-library/powershell_scripts/create_conda_environment.ps1'
                             bat """
-                                CALL conda remove --name py_%MATLAB_VERSION% --all
-                                CALL conda create --name py_%MATLAB_VERSION% python=3.6 -y
-                                CALL conda activate py_%MATLAB_VERSION%
-                                python -m pip install --upgrade --user pip
+                                CALL "%VS2019_VCVARSALL%" x86_amd64
+                                CALL conda activate %CONDA_ENV_NAME%
+                                python -m pip install --upgrade pip
                                 python -m pip install numpy
                                 python apply_requirements.py
                             """
@@ -128,19 +165,18 @@ pipeline {
         stage("Test") {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh """
-                            module load matlab/\$MATLAB_VERSION &&
-                            module load conda/3 &&
-                            cd test &&
-                            matlab -nosplash -nodesktop -batch "run('run_tests.m')"
-                        """
-                    } else {
-                        bat """
-                            CALL conda activate py_%MATLAB_VERSION%
-                            cd test
-                            "C:\\Programming\\Matlab%MATLAB_VERSION%\\bin\\matlab.exe" -nosplash -nodesktop -wait -batch "run('run_tests.m')"
-                        """
+                    dir('test') {
+                        if (isUnix()) {
+                            sh """
+                                module load conda/3 &&
+                                conda activate \$CONDA_ENV_NAME &&
+                                export PYTHON_EX_PATH=`which python` &&
+                                module load matlab/R\$MATLAB_VERSION &&
+                                matlab -nosplash -nodesktop -batch "run_tests"
+                            """
+                        } else {
+                            powershell '../PACE-jenkins-shared-library/powershell_scripts/execute_matlab_command.ps1 "run_tests"'
+                        }
                     }
                 }
             }
@@ -181,24 +217,24 @@ pipeline {
             script {
                 // the new .prj file's syntax seems to only work with R2019b
                 if (isUnix()) {
-                    if (env.MATLAB_VERSION == 'R2019b') {
+                    if (env.MATLAB_VERSION == '2019b') {
                         sh """
-                            module load matlab/\$MATLAB_VERSION &&
+                            module load matlab/R\$MATLAB_VERSION &&
                             module load conda/3 &&
-                            conda activate py &&
+                            conda activate \$CONDA_ENV_NAME &&
                             python -m pip install requests
                             python release.py --create-toolbox
                         """
                         archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                     }
                 } else {
-                        bat """
-                            CALL conda activate py_%MATLAB_VERSION%
-                            python -m pip install requests
-                            setx PATH "%PATH%;C:\\Programming\\Matlab%MATLAB_VERSION%\\bin\\"
-                            python release.py --create-toolbox
-                        """
-                        archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
+                    bat """
+                        CALL conda activate %CONDA_ENV_NAME%
+                        python -m pip install requests
+                        setx PATH "%PATH%;C:\\Programming\\MatlabR%MATLAB_VERSION%\\bin\\"
+                        python release.py --create-toolbox
+                    """
+                    archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
                 }
             }
         }
