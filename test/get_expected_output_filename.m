@@ -1,6 +1,10 @@
-function fname = get_expected_output_filename(material_name, pars, opts)
+function fname = get_expected_output_filename(material_name, opts)
     fname = material_name;
-    fname = [fname '_T' string(pars(1))];
+
+    idx = find(strcmp('temperature', opts));
+    if length(idx) == 1
+        fname = [fname '_T' string(opts(idx + 1))];
+    end
 
     idx = find(strcmp('debye_waller_grid', opts));
     if length(idx) == 1

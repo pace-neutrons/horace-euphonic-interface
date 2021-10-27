@@ -1,6 +1,11 @@
 `Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.0...HEAD>`_
 ----------
 
+- Improvements:
+
+  - There is a new ``frequency_scale`` argument to ``horace_disp`` which
+    allows the output frequencies to be scaled
+
 `v0.3.0 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.2.2...v0.3.0>`_
 ------
 

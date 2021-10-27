@@ -21,7 +21,31 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
             obj.overrides = {'horace_disp'};
         end
         function out = horace_disp(self, qh, qk, ql, pars, varargin)
-            % Overrides Python function to do chunking in Matlab to print messages.
+            % Overrides Python function to do chunking in Matlab to print messages
+
+            args = {};
+            kwargs = pyargs();
+            if ~isempty(varargin)
+                all_args = [pars, varargin];
+                % Find first occurence of str/char - assume everything before
+                % is positional args, everything after is kwargs
+                is_str = cellfun(@isstring, all_args);
+                if ~any(is_str)
+                    is_str = cellfun(@ischar, all_args);
+                end
+                str_idx = find(is_str==1);
+                if isempty(str_idx)
+                    % No strings - all positional
+                    args = all_args;
+                else
+                    args = all_args(1:str_idx(1) - 1);
+                    kwargs = pyargs(all_args{str_idx(1):end});
+                end
+            else
+                % If no varargin, assume all positional arguments
+                args = num2cell(pars);
+            end
+
             horace_disp = py.getattr(self.pyobj, 'horace_disp');
             chunk_size = double(self.pyobj.chunk);
             lqh = numel(qh);
@@ -33,7 +57,7 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
                     qi = (ii-1)*chunk_size + 1;
                     qf = min([ii*chunk_size lqh]);
                     fprintf('Using Euphonic to interpolate for q-points %d:%d out of %d\n', qi, qf, lqh);
-                    pyout = cat(1, pyout, light_python_wrapper.p2m(horace_disp(qh(qi:qf), qk(qi:qf), ql(qi:qf), pars, varargin{:})));
+                    pyout = cat(1, pyout, light_python_wrapper.p2m(horace_disp(qh(qi:qf), qk(qi:qf), ql(qi:qf), args{:}, kwargs)));
                 end
                 self.pyobj.chunk = chunk_size;
                 for jj = 1:2
@@ -43,7 +67,7 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
                     end
                 end
             else
-                out = light_python_wrapper.p2m(horace_disp(qh, qh, qk, pars, varargin{:}));
+                out = light_python_wrapper.p2m(horace_disp(qh, qh, qk, args{:}, kwargs));
             end
         end
     end

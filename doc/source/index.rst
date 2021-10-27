@@ -160,14 +160,43 @@ To see all the available optional parameters, try:
 
 In Horace, the ``disp2sqw_eval`` simulation function is used to simulate
 experimental data with Euphonic. This requires a function handle, which is provided
-by ``CoherentCrystal.horace_disp``:
+by ``CoherentCrystal.horace_disp``. Help on the ``horace_disp`` function can
+be seen by with ``help(euphonic.CoherentCrystal)``, under the ``Methods`` heading.
+
+``horace_disp`` has 2 optional arguments, ``intensity_scale`` and ``frequency_scale``
+which can be used to multiply the intensities and frequencies by a constant scaling
+factor. These can be used as positional arguments (note they must be in the correct
+order). For example:
 
 .. code-block:: matlab
 
-  scale_factor = 2e2;
+  intensity_scale = 100;
+  frequency_scale = 0.9
   effective_fwhm = 1;
 
-  cut_sim = disp2sqw_eval(cut, @coh_model.horace_disp, {scale_factor}, effective_fwhm);
+  cut_sim = disp2sqw_eval(cut, @coh_model.horace_disp, [intensity_scale, frequency_scale], effective_fwhm);
+
+They can also be used as named arguments, for example:
+
+.. code-block:: matlab
+
+  iscale = 100;
+  fscale = 0.9
+  effective_fwhm = 1;
+
+  cut_sim = disp2sqw_eval(cut, @coh_model.horace_disp, {'intensity_scale', iscale, 'frequency_scale', fscale}, effective_fwhm);
+
+If the scaling parameters are to be used in fitting (e.g. in Multifit or Tobyfit), they must be used as positional arguments, for example:
+
+.. code-block:: matlab
+
+  iscale = 100;
+  fcale = 0.9
+  fwhm = 1;
+
+  kk = multifit_sqw(cut);
+  kk = kk.set_fun(@disp2sqw, {@coh_model.horace_disp, [iscale, fscale], fwhm});
+  cut_sim = kk.fit();
 
 
 Full Example
@@ -194,10 +223,11 @@ An example script simulating a simple cut is below:
 
 
   % Simulate
-  scale_factor = 2e2;
+  intensity_scale = 100;
+  frequency_scale = 0.9;
   effective_fwhm = 1;
   cut_sim = disp2sqw_eval(...
-     cut, @coh_model.horace_disp, {scale_factor}, effective_fwhm);
+     cut, @coh_model.horace_disp, {'intensity_scale', intensity_scale, 'frequency_scale', frequency_scale}, effective_fwhm);
 
   % Plot
   plot(cut_sim);
