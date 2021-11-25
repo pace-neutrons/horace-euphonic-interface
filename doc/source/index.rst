@@ -120,7 +120,9 @@ Or, to read from Phonopy files:
 
 .. code-block:: matlab
 
-  fc = euphonic.ForceConstants.from_castep('path', 'phonopy.yaml')
+  fc = euphonic.ForceConstants.from_phonopy('path', 'quartz', ...
+                                            'summary_name', 'phonopy.yaml')
+
 
 **2. Set up model**
 
