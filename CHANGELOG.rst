@@ -1,6 +1,12 @@
 `Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.1...HEAD>`_
 ----------
 
+- Bug fixes:
+
+  - Use of temperature=0 will now calculate the 0K Debye-Waller and Bose
+    population factors - previously these temperature dependent effects
+    were not calculated at 0K
+
 `v0.3.1 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.0...v0.3.1>`_
 ------
 
