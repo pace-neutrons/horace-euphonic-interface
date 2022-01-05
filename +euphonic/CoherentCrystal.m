@@ -4,6 +4,7 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
     % This will bring up the Python documentation
     properties(Access=protected)
         pyobj = [];  % Reference to python object
+        classname = 'CoherentCrystal';
     end
     methods
         % Constructor
