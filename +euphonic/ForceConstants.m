@@ -5,7 +5,7 @@ classdef ForceConstants < light_python_wrapper.light_python_wrapper
     properties(Access=protected)
         pyobj = [];  % Reference to python object
         eu = [];     % Reference to euphonic module
-        classname = 'ForceConstants';
+        classname = 'euphonic.ForceConstants'; 
     end
     methods
         % Constructor
@@ -13,7 +13,6 @@ classdef ForceConstants < light_python_wrapper.light_python_wrapper
             euphonic_on();
             light_python_wrapper.light_python_wrapper.redirect_python_warnings();
             obj.eu = py.importlib.import_module('euphonic');
-            obj.helpref = obj.eu.ForceConstants;
             if ~isempty(varargin)
                 args = light_python_wrapper.light_python_wrapper.parse_args(varargin, py.getattr(obj.eu.ForceConstants, '__init__'));
                 obj.pyobj = py.euphonic.ForceConstants(args{:});

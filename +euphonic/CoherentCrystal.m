@@ -4,7 +4,7 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
     % This will bring up the Python documentation
     properties(Access=protected)
         pyobj = [];  % Reference to python object
-        classname = 'CoherentCrystal';
+        classname = 'euphonic_sqw_models.CoherentCrystal';
     end
     methods
         % Constructor
@@ -12,7 +12,6 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
             euphonic_on();
             light_python_wrapper.light_python_wrapper.redirect_python_warnings();
             eu = py.importlib.import_module('euphonic_sqw_models');
-            obj.helpref = eu.CoherentCrystal;
             % Allow empty constructor for help function
             if ~isempty(varargin)
                 args = light_python_wrapper.light_python_wrapper.parse_args(varargin, py.getattr(eu.CoherentCrystal, '__init__'));
