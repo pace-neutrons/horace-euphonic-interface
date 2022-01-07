@@ -5,6 +5,7 @@ import re
 import requests
 import subprocess
 import shutil
+import glob
 import versioneer
 import euphonic_version
 from update_dependencies import update_submodules
@@ -57,6 +58,8 @@ def create_mltbx():
     shutil.copytree('light_python_wrapper/+light_python_wrapper', 'mltbx/+light_python_wrapper')
     shutil.copytree('euphonic_sqw_models/euphonic_sqw_models', 'mltbx/euphonic_sqw_models/euphonic_sqw_models')
     shutil.copytree('+euphonic', 'mltbx/+euphonic')
+    for fil in glob.glob('light_python_wrapper/helputils/*.m'): shutil.copy(fil, 'mltbx/+euphonic')
+    for fil in glob.glob('light_python_wrapper/helputils/private/*.m'): shutil.copy(fil, 'mltbx/+euphonic/private')
     subprocess.run(['matlab', '-batch', 'create_mltbx'], cwd='mltbx')
     print('.mltbx created')
 

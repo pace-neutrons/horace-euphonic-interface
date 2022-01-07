@@ -105,7 +105,26 @@ To view the available functions and classes, try:
 
 .. code-block:: matlab
 
+  import euphonic.help euphonic.doc
   help euphonic
+  doc euphonic
+
+Because Euphonic is actually a Python program which is wrapped to be used in Matlab,
+its online documentation is in Python, and the default Matlab ``help`` function
+is not able to read this.
+The ``import`` command above instead overrides the default ``help`` and ``doc`` 
+functions to use the Python help system for Euphonic functions instead.
+
+You can also use:
+
+.. code-block:: matlab
+
+  import euphonic.*
+
+instead of importing each function individually.
+In this case, you can omit the initial ``euphonic.`` in the following commands
+(e.g. use ``ForceConstants.from_castep`` instead of ``euphonic.ForceConstants.from_castep``).
+
 
 **1. Read force constants**
 
@@ -145,6 +164,13 @@ To see all the available optional parameters, try:
 .. code-block:: matlab
 
   help(euphonic.CoherentCrystal)
+
+or:
+
+.. code-block:: matlab
+
+  import euphonic.help
+  help euphonic.CoherentCrystal
 
 .. note::
 
