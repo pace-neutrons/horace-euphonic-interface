@@ -6,11 +6,14 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
         pyobj = [];  % Reference to python object
         classname = 'euphonic_sqw_models.CoherentCrystal';
     end
+    % Constant properties are evaluated when the *class* is first loaded in memory
+    properties (Constant, Hidden)
+        is_initialised = euphonic_on();
+        is_redirected = light_python_wrapper.light_python_wrapper.redirect_python_warnings();
+    end
     methods
         % Constructor
         function obj = CoherentCrystal(varargin)
-            euphonic_on();
-            light_python_wrapper.light_python_wrapper.redirect_python_warnings();
             eu = py.importlib.import_module('euphonic_sqw_models');
             % Allow empty constructor for help function
             if ~isempty(varargin)

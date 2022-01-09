@@ -142,10 +142,27 @@ Or, to read from Phonopy files:
   fc = euphonic.ForceConstants.from_phonopy('path', 'quartz', ...
                                             'summary_name', 'phonopy.yaml')
 
+To get help on these functions type:
+
+.. code-block:: matlab
+
+   help(euphonic.ForceConstants.from_castep)
+   help(euphonic.ForceConstants.from_phonopy)
+   help(euphonic.ForceConstants.from_json_file)
+   help(euphonic.ForceConstants.from_dict)
+
+Note that in Matlab usage, a Matlab ``struct`` should be used for the dictionary
+in the ``from_dict`` function.
+
+Advanced users should note that these ``from_`` methods are actually wrappers around
+**python** function handles and are not Matlab functions.
+Thus they can be passed as variables and called with the ``()`` operator,
+and should not be converted into a Matlab function using the ``@`` operator.
+
 
 **2. Set up model**
 
-Next, the model must be set up. Currently, the ``CoherentCrystal`` model
+Next, the model must be set up. Currently, only the ``CoherentCrystal`` model
 is available. The force constants must be passed in, then any other optional
 parameters. For example:
 
@@ -169,8 +186,8 @@ or:
 
 .. code-block:: matlab
 
-  import euphonic.help
-  help euphonic.CoherentCrystal
+  import euphonic.doc
+  doc euphonic.CoherentCrystal
 
 .. note::
 
