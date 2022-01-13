@@ -1,4 +1,10 @@
 function install_python_modules()
+    % A script to install (using `pip`) the required Python modules
+    %
+    % Usage:
+    %
+    % >>  euphonic.install_python_modules
+
     req_mods = required_modules;
     try
         verify_python_modules(req_mods{:});

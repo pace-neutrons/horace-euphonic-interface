@@ -20,6 +20,8 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
                 args = light_python_wrapper.light_python_wrapper.parse_args(varargin, py.getattr(eu.CoherentCrystal, '__init__'));
                 obj.pyobj = py.euphonic_sqw_models.CoherentCrystal(args{:});
                 obj.populate_props();
+            else
+                obj.pyobj = py.getattr(eu, 'CoherentCrystal');
             end
             obj.overrides = {'horace_disp'};
         end
@@ -75,3 +77,4 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
         end
     end
 end
+
