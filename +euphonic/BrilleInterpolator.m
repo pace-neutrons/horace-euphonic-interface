@@ -11,7 +11,7 @@ classdef BrilleInterpolator < light_python_wrapper.light_python_wrapper
         function obj = BrilleInterpolator(varargin)
             euphonic_on();
             light_python_wrapper.light_python_wrapper.redirect_python_warnings();
-            obj.eu = py.importlib.import_module('euphonic.brille_interpolator');
+            obj.eu = py.importlib.import_module('euphonic.brille');
             obj.helpref = obj.eu.BrilleInterpolator;
             if ~isempty(varargin)
                 args = light_python_wrapper.light_python_wrapper.parse_args(...
