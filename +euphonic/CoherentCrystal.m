@@ -1,6 +1,15 @@
 classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
     % Matlab wrapper around a Euphonic interface Python class
-    % To obtain help on this class and its methods please type help(class) or help(class.method) on the command line.
+    % To obtain help on this class and its methods please type:
+    %
+    %   >> import euphonic.doc
+    %   >> doc euphonic.CoherentCrystal
+    %
+    % Or:
+    %
+    %   >> import euphonic.help
+    %   >> help euphonic.CoherentCrystal
+    %
     % This will bring up the Python documentation
     properties(Access=protected)
         pyobj = [];  % Reference to python object
@@ -26,6 +35,14 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
             obj.overrides = {'horace_disp'};
         end
         function out = horace_disp(self, qh, qk, ql, pars, varargin)
+            % Calculates the phonon dispersion surface for input qh, qk, and ql vectors
+            % To obtain help on this function, please type:
+            %
+            %   >> import euphonic.help
+            %   >> help euphonic.CoherentCrystal.horace_disp
+            %
+            % This will bring up the Python documentation
+
             % Overrides Python function to do chunking in Matlab to print messages
 
             args = {};

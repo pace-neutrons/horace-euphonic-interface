@@ -78,7 +78,10 @@ To test everything has been installed ok, try:
 
 .. code-block:: matlab
 
-  >> help(euphonic.ForceConstants)
+  >> euphonic.ForceConstants
+
+If everything worked, you should see the Python type description
+:code:`<class 'euphonic.force_constants.ForceConstants'>`.
 
 IDAaaS Installation
 -------------------
@@ -105,25 +108,18 @@ To view the available functions and classes, try:
 
 .. code-block:: matlab
 
-  import euphonic.help euphonic.doc
+  import euphonic.help
   help euphonic
+  import euphonic.doc
   doc euphonic
 
 Because Euphonic is actually a Python program which is wrapped to be used in Matlab,
 its online documentation is in Python, and the default Matlab ``help`` function
 is not able to read this.
-The ``import`` command above instead overrides the default ``help`` and ``doc`` 
+The ``import`` commands above instead overrides the default ``help`` and ``doc`` 
 functions to use the Python help system for Euphonic functions instead.
-
-You can also use:
-
-.. code-block:: matlab
-
-  import euphonic.*
-
-instead of importing each function individually.
-In this case, you can omit the initial ``euphonic.`` in the following commands
-(e.g. use ``ForceConstants.from_castep`` instead of ``euphonic.ForceConstants.from_castep``).
+(You can also use :code:`import euphonic.help euphonic.doc` instead of using
+two separate ``import`` commands.)
 
 
 **1. Read force constants**
@@ -146,19 +142,15 @@ To get help on these functions type:
 
 .. code-block:: matlab
 
-   help(euphonic.ForceConstants.from_castep)
-   help(euphonic.ForceConstants.from_phonopy)
-   help(euphonic.ForceConstants.from_json_file)
-   help(euphonic.ForceConstants.from_dict)
+   help euphonic.ForceConstants.from_castep
+   help euphonic.ForceConstants.from_phonopy
+   help euphonic.ForceConstants.from_json_file
+   help euphonic.ForceConstants.from_dict
+
+You can also type :code:`help euphonic` or :code:`doc euphonic` and follow the hyperlinks.
 
 Note that in Matlab usage, a Matlab ``struct`` should be used for the dictionary
 in the ``from_dict`` function.
-
-Advanced users should note that these ``from_`` methods are actually wrappers around
-**python** function handles and are not Matlab functions.
-Thus they can be passed as variables and called with the ``()`` operator,
-and should not be converted into a Matlab function using the ``@`` operator.
-
 
 **2. Set up model**
 
@@ -176,17 +168,11 @@ parameters. For example:
      'asr', 'reciprocal', ...
      'use_c', true);
 
-To see all the available optional parameters, try:
+To see all the available optional parameters, try one of:
 
 .. code-block:: matlab
 
-  help(euphonic.CoherentCrystal)
-
-or:
-
-.. code-block:: matlab
-
-  import euphonic.doc
+  help euphonic.CoherentCrystal
   doc euphonic.CoherentCrystal
 
 .. note::
