@@ -43,6 +43,27 @@ def check_submodule_version(submodule):
                         f'should depend on release versions of its submodules')
 
 
+HELPDOCSTR = '\n' \
+    '    % Overloaded help command to display Python help in Matlab\n' \
+    '    % To use it, please type\n' \
+    '    %\n' \
+    '    % >> import euphonic.help\n' \
+    '    % >> help <topic>\n' \
+    '    %\n' \
+    '    % where <topic> is a Python class or method which has been wrapped for use in Matlab.\n' \
+    '    % If the topic is not wrapped, the normal Matlab help is displayed.\n' \
+
+def replace_matlab_docstring(filename, replacement_str):
+    with open(filename) as f:
+        txt = f.read()
+    cm = [m.start() for m in re.finditer(r'\n\s*%', txt)]
+    nl = [m.start() for m in re.finditer(r'\n', txt)]
+    idx = [cm[idx] for idx in range(len(cm)) if cm[idx] == nl[idx]]
+    newtxt = txt[:idx[0]] + replacement_str + txt[idx[-1]:]
+    with open(filename, 'w') as f:
+        f.write(newtxt)
+
+
 def create_mltbx():
     import fileinput
     # replace version string
@@ -60,6 +81,8 @@ def create_mltbx():
     shutil.copytree('+euphonic', 'mltbx/+euphonic')
     for fil in glob.glob('light_python_wrapper/helputils/*.m'): shutil.copy(fil, 'mltbx/+euphonic')
     for fil in glob.glob('light_python_wrapper/helputils/private/*.m'): shutil.copy(fil, 'mltbx/+euphonic/private')
+    replace_matlab_docstring('mltbx/+euphonic/help.m', HELPDOCSTR)
+    replace_matlab_docstring('mltbx/+euphonic/doc.m', HELPDOCSTR.replace('help', 'doc'))
     subprocess.run(['matlab', '-batch', 'create_mltbx'], cwd='mltbx')
     print('.mltbx created')
 

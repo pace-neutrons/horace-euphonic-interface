@@ -192,7 +192,7 @@ To see all the available optional parameters, try one of:
 In Horace, the ``disp2sqw_eval`` simulation function is used to simulate
 experimental data with Euphonic. This requires a function handle, which is provided
 by ``CoherentCrystal.horace_disp``. Help on the ``horace_disp`` function can
-be seen by with ``help(euphonic.CoherentCrystal)``, under the ``Methods`` heading.
+be seen by with ``help euphonic.CoherentCrystal.horace_disp``.
 
 ``horace_disp`` has 2 optional arguments, ``intensity_scale`` and ``frequency_scale``
 which can be used to multiply the intensities and frequencies by a constant scaling
