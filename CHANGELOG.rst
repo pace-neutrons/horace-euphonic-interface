@@ -7,6 +7,17 @@
     population factors - previously these temperature dependent effects
     were not calculated at 0K
 
+- Improvements:
+
+  - There are now ``help`` and ``doc`` commands which override the built-in
+    Matlab commands to display richer help information (from the Python
+    on-line documentation) for Euphonic commands.
+    To use them, you must first import them with :code:`import euphonic.help`
+    or :code:`import euphonic.doc` to override the built-in commands.
+    Then use it as normal, e.g. :code:`help euphonic.ForceConstants`.
+    If this is used without the import, the original Matlab help is displayed
+    which has been modified to suggest that the import is used.
+
 `v0.3.1 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.0...v0.3.1>`_
 ------
 

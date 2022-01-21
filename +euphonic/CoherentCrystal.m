@@ -1,27 +1,48 @@
 classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
     % Matlab wrapper around a Euphonic interface Python class
-    % To obtain help on this class and its methods please type help(class) or help(class.method) on the command line.
+    % To obtain help on this class and its methods please type:
+    %
+    %   >> import euphonic.doc
+    %   >> doc euphonic.CoherentCrystal
+    %
+    % Or:
+    %
+    %   >> import euphonic.help
+    %   >> help euphonic.CoherentCrystal
+    %
     % This will bring up the Python documentation
     properties(Access=protected)
         pyobj = [];  % Reference to python object
-        classname = 'CoherentCrystal';
+        classname = 'euphonic_sqw_models.CoherentCrystal';
+    end
+    % Constant properties are evaluated when the *class* is first loaded in memory
+    properties (Constant, Hidden)
+        is_initialised = euphonic_on();
+        is_redirected = light_python_wrapper.light_python_wrapper.redirect_python_warnings();
     end
     methods
         % Constructor
         function obj = CoherentCrystal(varargin)
-            euphonic_on();
-            light_python_wrapper.light_python_wrapper.redirect_python_warnings();
             eu = py.importlib.import_module('euphonic_sqw_models');
-            obj.helpref = eu.CoherentCrystal;
             % Allow empty constructor for help function
             if ~isempty(varargin)
                 args = light_python_wrapper.light_python_wrapper.parse_args(varargin, py.getattr(eu.CoherentCrystal, '__init__'));
                 obj.pyobj = py.euphonic_sqw_models.CoherentCrystal(args{:});
                 obj.populate_props();
+            else
+                obj.pyobj = py.getattr(eu, 'CoherentCrystal');
             end
             obj.overrides = {'horace_disp'};
         end
         function out = horace_disp(self, qh, qk, ql, pars, varargin)
+            % Calculates the phonon dispersion surface for input qh, qk, and ql vectors
+            % To obtain help on this function, please type:
+            %
+            %   >> import euphonic.help
+            %   >> help euphonic.CoherentCrystal.horace_disp
+            %
+            % This will bring up the Python documentation
+
             % Overrides Python function to do chunking in Matlab to print messages
 
             args = {};
@@ -73,3 +94,4 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
         end
     end
 end
+

@@ -78,7 +78,10 @@ To test everything has been installed ok, try:
 
 .. code-block:: matlab
 
-  >> help(euphonic.ForceConstants)
+  >> euphonic.ForceConstants
+
+If everything worked, you should see the Python type description
+:code:`<class 'euphonic.force_constants.ForceConstants'>`.
 
 IDAaaS Installation
 -------------------
@@ -105,7 +108,19 @@ To view the available functions and classes, try:
 
 .. code-block:: matlab
 
+  import euphonic.help
   help euphonic
+  import euphonic.doc
+  doc euphonic
+
+Because Euphonic is actually a Python program which is wrapped to be used in Matlab,
+its online documentation is in Python, and the default Matlab ``help`` function
+is not able to read this.
+The ``import`` commands above instead overrides the default ``help`` and ``doc`` 
+functions to use the Python help system for Euphonic functions instead.
+(You can also use :code:`import euphonic.help euphonic.doc` instead of using
+two separate ``import`` commands.)
+
 
 **1. Read force constants**
 
@@ -123,10 +138,23 @@ Or, to read from Phonopy files:
   fc = euphonic.ForceConstants.from_phonopy('path', 'quartz', ...
                                             'summary_name', 'phonopy.yaml')
 
+To get help on these functions type:
+
+.. code-block:: matlab
+
+   help euphonic.ForceConstants.from_castep
+   help euphonic.ForceConstants.from_phonopy
+   help euphonic.ForceConstants.from_json_file
+   help euphonic.ForceConstants.from_dict
+
+You can also type :code:`help euphonic` or :code:`doc euphonic` and follow the hyperlinks.
+
+Note that in Matlab usage, a Matlab ``struct`` should be used for the dictionary
+in the ``from_dict`` function.
 
 **2. Set up model**
 
-Next, the model must be set up. Currently, the ``CoherentCrystal`` model
+Next, the model must be set up. Currently, only the ``CoherentCrystal`` model
 is available. The force constants must be passed in, then any other optional
 parameters. For example:
 
@@ -140,11 +168,12 @@ parameters. For example:
      'asr', 'reciprocal', ...
      'use_c', true);
 
-To see all the available optional parameters, try:
+To see all the available optional parameters, try one of:
 
 .. code-block:: matlab
 
-  help(euphonic.CoherentCrystal)
+  help euphonic.CoherentCrystal
+  doc euphonic.CoherentCrystal
 
 .. note::
 
@@ -163,7 +192,7 @@ To see all the available optional parameters, try:
 In Horace, the ``disp2sqw_eval`` simulation function is used to simulate
 experimental data with Euphonic. This requires a function handle, which is provided
 by ``CoherentCrystal.horace_disp``. Help on the ``horace_disp`` function can
-be seen by with ``help(euphonic.CoherentCrystal)``, under the ``Methods`` heading.
+be seen by with ``help euphonic.CoherentCrystal.horace_disp``.
 
 ``horace_disp`` has 2 optional arguments, ``intensity_scale`` and ``frequency_scale``
 which can be used to multiply the intensities and frequencies by a constant scaling

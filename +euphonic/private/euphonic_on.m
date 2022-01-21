@@ -1,4 +1,4 @@
-function euphonic_on()
+function out = euphonic_on()
 
 global horace_euphonic_interface_is_initialised;
 if isempty(horace_euphonic_interface_is_initialised) || ~horace_euphonic_interface_is_initialised
@@ -46,6 +46,8 @@ if isempty(horace_euphonic_interface_is_initialised) || ~horace_euphonic_interfa
     
     horace_euphonic_interface_is_initialised = true;
 end
+
+out = horace_euphonic_interface_is_initialised;
 
 end
 

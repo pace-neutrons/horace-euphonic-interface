@@ -33,7 +33,8 @@ append(py.sys.path, repodir);
 py.euphonic_version.update_euphonic_version();
 
 res = runtests("test/", 'Tag', 'integration');
-passed = [res.Passed];
+res2 = runtests("test/", 'Tag', 'help');
+passed = [res.Passed res2.Passed];
 if ~all(passed)
     quit(1);
 end
