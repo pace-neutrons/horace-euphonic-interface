@@ -13,9 +13,17 @@ catch ME
   end
 end
 
-% Add horace-euphonic-interface to Path
-addpath('..')
-addpath('../light_python_wrapper')
+% Install horace-euphonic-interface mltbx
+toolboxes = matlab.addons.toolbox.installedToolboxes;
+for i = 1:length(toolboxes)
+  if strcmp(toolboxes(i).Name, 'horace_euphonic_interface')
+    matlab.addons.toolbox.uninstallToolbox(toolboxes(i));
+    break;
+  end
+end
+matlab.addons.toolbox.installToolbox(...
+  ['..' filesep 'mltbx' filesep 'horace_euphonic_interface.mltbx']);
+matlab.addons.toolbox.installedToolboxes
 
 % Set flags on Linux to avoid segfault with libraries
 if ~ispc

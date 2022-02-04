@@ -128,7 +128,7 @@ pipeline {
             }
         }
 
-        stage("Set up") {
+        stage("Create mltbx and install Python modules") {
             steps {
                 script {
                     if (isUnix()) {
@@ -136,27 +136,32 @@ pipeline {
                     } else {
                         bat 'git submodule update --init'
                     }
-                    dir('euphonic_sqw_models') {
-                        if (isUnix()) {
-                            sh """
-                                module load conda/3 &&
-                                module load gcc &&
-                                conda create --name \$CONDA_ENV_NAME python=3.6 -y &&
-                                conda activate \$CONDA_ENV_NAME &&
-                                python -m pip install --upgrade pip &&
-                                python -m pip install numpy &&
-                                python apply_requirements.py
-                            """
-                        } else {
-                            powershell '../PACE-jenkins-shared-library/powershell_scripts/create_conda_environment.ps1'
-                            bat """
-                                CALL "%VS2019_VCVARSALL%" x86_amd64
-                                CALL conda activate %CONDA_ENV_NAME%
-                                python -m pip install --upgrade pip
-                                python -m pip install numpy
-                                python apply_requirements.py
-                            """
-                        }
+                    if (isUnix()) {
+                        sh """
+                            module load conda/3 &&
+                            module load gcc &&
+                            module load matlab/R\$MATLAB_VERSION &&
+                            conda create --name \$CONDA_ENV_NAME python=3.6 -y &&
+                            conda activate \$CONDA_ENV_NAME &&
+                            python -m pip install --upgrade pip &&
+                            python -m pip install requests numpy &&
+                            python create_mltbx.py &&
+                            cd euphonic_sqw_models &&
+                            python apply_requirements.py
+                        """
+                    } else {
+                        powershell 'PACE-jenkins-shared-library/powershell_scripts/create_conda_environment.ps1'
+                        bat """
+                            setx PATH "%PATH%;C:\\Programming\\MatlabR%MATLAB_VERSION%\\bin\\"
+                            CALL "%VS2019_VCVARSALL%" x86_amd64
+                            CALL conda activate %CONDA_ENV_NAME%
+                            python -m pip install --upgrade pip
+                            python -m pip install requests
+                            python create_mltbx.py
+                            python -m pip install numpy
+                            cd euphonic_sqw_models
+                            python apply_requirements.py
+                        """
                     }
                 }
             }
@@ -215,27 +220,7 @@ pipeline {
         // Always publish toolbox - useful for debugging and integration testing
         always {
             script {
-                // the new .prj file's syntax seems to only work with R2019b
-                if (isUnix()) {
-                    if (env.MATLAB_VERSION == '2019b') {
-                        sh """
-                            module load matlab/R\$MATLAB_VERSION &&
-                            module load conda/3 &&
-                            conda activate \$CONDA_ENV_NAME &&
-                            python -m pip install requests
-                            python release.py --create-toolbox
-                        """
-                        archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
-                    }
-                } else {
-                    bat """
-                        CALL conda activate %CONDA_ENV_NAME%
-                        python -m pip install requests
-                        setx PATH "%PATH%;C:\\Programming\\MatlabR%MATLAB_VERSION%\\bin\\"
-                        python release.py --create-toolbox
-                    """
-                    archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
-                }
+                archiveArtifacts artifacts: 'mltbx/horace_euphonic_interface.mltbx'
             }
         }
         cleanup {
