@@ -177,7 +177,9 @@ pipeline {
                                 conda activate \$CONDA_ENV_NAME &&
                                 export PYTHON_EX_PATH=`which python` &&
                                 module load matlab/R\$MATLAB_VERSION &&
-                                matlab -nosplash -nodesktop -batch "run_tests"
+                                conda install xorg-x11-server-xvfb-cos7-x86_64 --channel conda-forge &&
+                                xvfb-run -e /dev/stderr --server-args="-core -noreset -screen 0 640x480x24" --server-num=101 \
+                                    matlab -nosplash -batch "run_tests"
                             """
                         } else {
                             powershell '../PACE-jenkins-shared-library/powershell_scripts/execute_matlab_command.ps1 "run_tests"'
