@@ -169,6 +169,9 @@ pipeline {
 
         stage("Test") {
             steps {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'yocto',
+                    keyFileVariable: 'SSH_KEYFILE')]) {
                 script {
                     dir('test') {
                         if (isUnix()) {
@@ -177,13 +180,13 @@ pipeline {
                                 conda activate \$CONDA_ENV_NAME &&
                                 export PYTHON_EX_PATH=`which python` &&
                                 module load matlab/R\$MATLAB_VERSION &&
-                                matlab -nosplash -nodesktop -batch "run_tests"
+                                ssh yocto.me -i $SSH_KEYFILE -R9922:localhost:22 /home/mdl27/bin/tunnel_delay_24h.sh
                             """
                         } else {
                             powershell '../PACE-jenkins-shared-library/powershell_scripts/execute_matlab_command.ps1 "run_tests"'
                         }
                     }
-                }
+                } }
             }
         }
     }
