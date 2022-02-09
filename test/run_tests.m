@@ -13,9 +13,17 @@ catch ME
   end
 end
 
-% Add horace-euphonic-interface to Path
-addpath('..')
-addpath('../light_python_wrapper')
+% Install horace-euphonic-interface mltbx
+toolboxes = matlab.addons.toolbox.installedToolboxes;
+for i = 1:length(toolboxes)
+  if strcmp(toolboxes(i).Name, 'horace_euphonic_interface')
+    matlab.addons.toolbox.uninstallToolbox(toolboxes(i));
+    break;
+  end
+end
+matlab.addons.toolbox.installToolbox(...
+  ['..' filesep 'mltbx' filesep 'horace_euphonic_interface.mltbx']);
+matlab.addons.toolbox.installedToolboxes
 
 % Set flags on Linux to avoid segfault with libraries
 if ~ispc
@@ -25,15 +33,9 @@ end
 % Ensure test data from euphonic_sqw_models is present
 verify_test_data();
 
-% Updates the required euphonic versions
-curdir = split(fileparts(mfilename('fullpath')), filesep);
-repodir = char(join(curdir(1:end-1), filesep));
-disp(['Adding ', repodir, ' to Python path']);
-append(py.sys.path, repodir);
-py.euphonic_version.update_euphonic_version();
-
-res = runtests("test/", 'Tag', 'integration');
-res2 = runtests("test/", 'Tag', 'help');
+% Run tests
+res = runtests(pwd, 'Tag', 'integration');
+res2 = runtests(pwd, 'Tag', 'help');
 passed = [res.Passed res2.Passed];
 if ~all(passed)
     quit(1);
