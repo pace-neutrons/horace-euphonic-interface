@@ -23,11 +23,11 @@ classdef ForceConstants < light_python_wrapper.light_python_wrapper
     methods
         % Constructor
         function obj = ForceConstants(varargin)
+            obj.eu = py.importlib.import_module('euphonic');
             if ~isempty(varargin)
                 args = light_python_wrapper.light_python_wrapper.parse_args(varargin, py.getattr(obj.eu.ForceConstants, '__init__'));
                 obj.pyobj = py.euphonic.ForceConstants(args{:});
             else
-                obj.eu = py.importlib.import_module('euphonic');
                 obj.pyobj = py.getattr(obj.eu, 'ForceConstants');
             end
             obj.populate_props();
