@@ -250,7 +250,8 @@ An example script simulating a simple cut is below:
      'debye_waller_grid', [6 6 6], ...
      'temperature', 100, ...
      'asr', 'reciprocal', ...
-     'use_c', true);
+     'use_c', true, ...
+     'n_threads', int32(4));
 
 
   % Simulate
@@ -262,6 +263,67 @@ An example script simulating a simple cut is below:
 
   % Plot
   plot(cut_sim);
+
+
+Performance and Memory Tips
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following are a few tips to help make sure you have the optimum settings
+for the type of work you're doing and your computing resources.
+
+**Number of Threads**
+
+Euphonic will make use of the C Extension by default, and automatically choose
+the number of threads using the Python function ``multiprocessing.cpu_count``.
+However, this can be overridden by the ``use_c`` and ``n_threads`` arguments
+to ``CoherentCrystal``. Ensure that if these arguments are used, they are
+appropriate to the computing resource you are using. Generally ``use_c``
+should be  ``true`` and ``n_threads`` should be the same as the number of
+cores.
+
+**Chunking**
+
+The phonon eigenvectors, which are an intermediate step in calculating
+the scattering intensities, are particularly memory intensive, requiring
+:math:`18n^2` floating point numbers per q-point, where n is the number
+of atoms in the unit cell of your calculation. To reduce memory consumption,
+the intensity calculation can be chunked with the ``chunk`` argument to
+``CoherentCrystal``. This defines the number of q-points that are calculated
+at once. By default the calculation is not chunked at all, so this argument
+may be useful if you find you are running out of memory (which may cause
+mysterious crashes!). It is best to use the largest chunk you can
+get away with based on the amount of memory available and the number of atoms
+in the unit cell.
+
+**Reducing Q-points**
+
+The most time consuming part of the intensity calculation is the calculation
+of the phonon frequencies and eigenvectors. Fortunately these are periodic
+from one Brillouin Zone to the next. If the ``reduce_qpts`` argument to
+``CoherentCrystal`` is set to ``true`` (this is the default), Euphonic will
+look for q-points in other Brillouin Zones e.g. if there are points
+``[0.5, 0.5, 0.]`` and ``[1.5, 1.5, 2.]`` Euphonic will only calculate
+frequencies/eigenvectors for one of those q-points. However, there is some
+overhead to finding these q-points, and Euphonic will only look at q-points
+in the same chunk, so setting ``reduce_qpts`` to ``true`` will not always
+be beneficial. It is most likely to be useful if you are simulating a dnd
+object with commensurate bin spacing. If you are simulating per pixel, or
+are using Tobyfit to apply resolution convolution, the q-points are likely
+to be irregular so ``reduce_qpts`` may not provide a benefit.
+
+**Dipole Parameter**
+
+If your simulation cell is polar (i.e. you have Born charges and dielectric
+permittivity tensors), there is an extra computationally expensive correction
+that must be applied when calculating the phonon frequencies and eigenvectors.
+This correction is based on an Ewald sum, so includes both real space and
+reciprocal space sums. The limit of these sums can be tuned so that the
+optimum balance of real and reciprocal space terms is used to reduce the
+computation required. This can be done with the ``dipole_parameter`` argument
+to ``CoherentCrystal``. Euphonic has a Python command-line tool,
+`euphonic-optimise-dipole-parameter <https://euphonic.readthedocs.io/en/stable/dipole-parameter-script.html>`_
+which can help to tune this argument.
+
 
 .. toctree::
    :hidden:
