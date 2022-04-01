@@ -1,4 +1,4 @@
-classdef EuphonicTestScalePars < matlab.unittest.TestCase
+classdef EuphonicSfTestScalePars < EuphonicSfTestBase
 
     properties (TestParameter)
         % intensity_scale, frequency_scale, horace_disp_args
@@ -11,7 +11,6 @@ classdef EuphonicTestScalePars < matlab.unittest.TestCase
                       {50., 1., {50}}}, ...
                       {1., 0.95, {[], 'frequency_scale', 0.95}}}; % Simulates using kk.simulate in Toby/Multifit with named args
     end
-
     methods(Test, ParameterCombination='sequential', TestTags={'integration'})
         function testScaleParameters(testCase, scale_pars)
             [iscale, fscale, horace_disp_args] = scale_pars{:};
@@ -31,16 +30,13 @@ classdef EuphonicTestScalePars < matlab.unittest.TestCase
                           'asr', 'reciprocal'};
                       
             coherentsqw = euphonic.CoherentCrystal(fc, coh_kwargs{:});
-            fname = get_expected_output_filename('quartz', coh_kwargs);
 
             [w, sf] = coherentsqw.horace_disp(qpts(:, 1), qpts(:, 2), qpts(:, 3), horace_disp_args{:});
             w_mat = transpose(cell2mat(w'));
             sf_mat = transpose(cell2mat(sf'));
 
-            fname = get_expected_output_filename('quartz', coh_kwargs);
-            load(fname, 'expected_w', 'expected_sf');
-            expected_w_mat = cell2mat(expected_w);
-            expected_sf_mat = cell2mat(expected_sf);
+            [expected_w_mat, expected_sf_mat] = testCase.get_expected_w_sf(...
+                'quartz', coh_kwargs);
 
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
@@ -48,19 +44,14 @@ classdef EuphonicTestScalePars < matlab.unittest.TestCase
             bounds = AbsoluteTolerance(fscale*6e-4) | RelativeTolerance(0.01);
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(fscale*expected_w_mat, 'within', bounds));
+            
             % Ignore acoustic structure factors by setting to zero - their
             % values can be unstable at small frequencies
-            sf_mat(:, 1:3) = 0;
-            expected_sf_mat(:, 1:3) = 0;
-            idx = find(strcmp('negative_e', coh_kwargs));
-            if length(idx) == 1 && testCase.opts{idx + 1} == true
-                n = size(sf_mat, 2)/2;
-                sf_mat(:, n+1:n+3) = 0;
-                expected_sf_mat(:, n+1:n+3) = 0;
-            end
+            sf_mat = testCase.zero_acoustic_sf(sf_mat, coh_kwargs);
+            expected_sf_mat = testCase.zero_acoustic_sf(expected_sf_mat, coh_kwargs);
             % Need to sum over degenerate modes to compare structure factors
-            sf_summed = sum_degenerate_modes(w_mat, sf_mat);
-            expected_sf_summed = sum_degenerate_modes(w_mat, expected_sf_mat);
+            sf_summed = testCase.sum_degenerate_modes(w_mat, sf_mat);
+            expected_sf_summed = testCase.sum_degenerate_modes(w_mat, expected_sf_mat);
             bounds = AbsoluteTolerance(iscale*0.01) | RelativeTolerance(0.01);
             testCase.verifyThat(sf_summed, ...
                 IsEqualTo(iscale*expected_sf_summed, 'within', bounds));

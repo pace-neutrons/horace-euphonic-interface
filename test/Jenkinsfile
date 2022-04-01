@@ -128,7 +128,7 @@ pipeline {
             }
         }
 
-        stage("Create mltbx and install Python modules") {
+        stage("Create mltbx") {
             steps {
                 script {
                     if (isUnix()) {
@@ -139,15 +139,12 @@ pipeline {
                     if (isUnix()) {
                         sh """
                             module load conda/3 &&
-                            module load gcc &&
                             module load matlab/R\$MATLAB_VERSION &&
                             conda create --name \$CONDA_ENV_NAME python=3.6 -y &&
                             conda activate \$CONDA_ENV_NAME &&
                             python -m pip install --upgrade pip &&
-                            python -m pip install requests numpy &&
-                            python create_mltbx.py &&
-                            cd euphonic_sqw_models &&
-                            python apply_requirements.py
+                            python -m pip install requests &&
+                            python create_mltbx.py
                         """
                     } else {
                         powershell 'PACE-jenkins-shared-library/powershell_scripts/create_conda_environment.ps1'
@@ -158,37 +155,49 @@ pipeline {
                             python -m pip install --upgrade pip
                             python -m pip install requests
                             python create_mltbx.py
-                            python -m pip install numpy
-                            cd euphonic_sqw_models
-                            python apply_requirements.py
                         """
                     }
                 }
             }
         }
-
-        stage("Test") {
+        stage("Install Euphonic and run tests") {
             steps {
                 script {
                     dir('test') {
                         if (isUnix()) {
                             sh """
                                 module load conda/3 &&
+                                module load gcc &&
                                 conda activate \$CONDA_ENV_NAME &&
                                 export PYTHON_EX_PATH=`which python` &&
                                 module load matlab/R\$MATLAB_VERSION &&
                                 conda install xorg-x11-server-xvfb-cos7-x86_64 --channel conda-forge &&
-                                xvfb-run -e /dev/stderr matlab -nosplash -batch "run_tests"
+                                python -m pip install numpy &&
+                                python ../euphonic_sqw_models/apply_requirements.py &&
+                                xvfb-run -e /dev/stderr matlab -nosplash -batch "set_up_dependencies; run_tests('not', 'phonopy_reader')"
+                                python ../euphonic_sqw_models/apply_requirements.py --extras phonopy_reader &&
+                                xvfb-run -e /dev/stderr matlab -nosplash -batch "set_up_dependencies; run_tests('phonopy_reader')"
                             """
                         } else {
-                            powershell '../PACE-jenkins-shared-library/powershell_scripts/execute_matlab_command.ps1 "run_tests"'
+                            bat """
+                                CALL "%VS2019_VCVARSALL%" x86_amd64
+                                CALL conda activate %CONDA_ENV_NAME%
+                                python -m pip install numpy
+                                python ../euphonic_sqw_models/apply_requirements.py
+                            """
+                            powershell '../PACE-jenkins-shared-library/powershell_scripts/execute_matlab_command.ps1 "set_up_dependencies; run_tests(\'not\', \'phonopy_reader\')"'
+                            bat """
+                                CALL "%VS2019_VCVARSALL%" x86_amd64
+                                CALL conda activate %CONDA_ENV_NAME%
+                                python ../euphonic_sqw_models/apply_requirements.py --extras phonopy_reader
+                            """
+                            powershell '../PACE-jenkins-shared-library/powershell_scripts/execute_matlab_command.ps1 "set_up_dependencies; run_tests(\'phonopy_reader\')"'
                         }
                     }
                 }
             }
         }
     }
-
     post {
 
         success {
