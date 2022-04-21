@@ -55,6 +55,8 @@
       <file>${PROJECT_ROOT}</file>
     </fileset.rootdir>
     <fileset.rootfiles>
+      <file>${PROJECT_ROOT}/CITATION.cff</file>
+      <file>${PROJECT_ROOT}/LICENSE</file>
       <file>${PROJECT_ROOT}/+euphonic</file>
       <file>${PROJECT_ROOT}/+light_python_wrapper</file>
       <file>${PROJECT_ROOT}/euphonic_sqw_models</file>

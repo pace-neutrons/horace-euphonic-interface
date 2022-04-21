@@ -41,6 +41,8 @@ def create_mltbx():
     # shutil.copytree expects destination to not exist
     for dest_folder in ['+light_python_wrapper', 'euphonic_sqw_models', '+euphonic']:
         if os.path.isdir('mltbx/' + dest_folder): shutil.rmtree('mltbx/' + dest_folder)
+    shutil.copyfile('LICENSE', 'mltbx/LICENSE')
+    shutil.copyfile('CITATION.cff', 'mltbx/CITATION.cff')
     shutil.copytree('light_python_wrapper/+light_python_wrapper', 'mltbx/+light_python_wrapper')
     shutil.copytree('euphonic_sqw_models/euphonic_sqw_models', 'mltbx/euphonic_sqw_models/euphonic_sqw_models')
     shutil.copytree('+euphonic', 'mltbx/+euphonic')
