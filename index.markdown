@@ -14,12 +14,14 @@ schemadotorg:
   datePublished: '2022-02-09T00:00:00'
   identifier: https://doi.org/10.5286/SOFTWARE/HORACEEUPHONICINTERFACE
   keywords:
-  - Python
+  - MATLAB
   - physics
   - phonons
   - inelastic neutron scattering
   - CASTEP
   - Phonopy
+  - Horace
+  - Euphonic
   license: http://www.gnu.org/licenses/gpl-3.0-standalone.html
   name: Horace-Euphonic-Interface
   version: 0.3.2
