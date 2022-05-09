@@ -279,7 +279,8 @@ However, this can be overridden by the ``use_c`` and ``n_threads`` arguments
 to ``CoherentCrystal``. Ensure that if these arguments are used, they are
 appropriate to the computing resource you are using. Generally ``use_c``
 should be  ``true`` and ``n_threads`` should be the same as the number of
-cores.
+cores (or the same as the number of logical cores if your system has
+hyperthreading).
 
 **Chunking**
 
@@ -289,10 +290,10 @@ the scattering intensities, are particularly memory intensive, requiring
 of atoms in the unit cell of your calculation. To reduce memory consumption,
 the intensity calculation can be chunked with the ``chunk`` argument to
 ``CoherentCrystal``. This defines the number of q-points that are calculated
-at once. By default the calculation is not chunked at all, so this argument
-may be useful if you find you are running out of memory (which may cause
-mysterious crashes!). It is best to use the largest chunk you can
-get away with based on the amount of memory available and the number of atoms
+at once. By default the calculation is chunked to calculate 5000 q-points at
+a time, this is conservative to avoid running out of memory (which can cause
+mysterious crashes!). It is best to use the largest chunk you can get away
+with based on the amount of memory available and the number of atoms
 in the unit cell.
 
 **Reducing Q-points**
@@ -306,7 +307,7 @@ look for q-points in other Brillouin Zones e.g. if there are points
 frequencies/eigenvectors for one of those q-points. However, there is some
 overhead to finding these q-points, and Euphonic will only look at q-points
 in the same chunk, so setting ``reduce_qpts`` to ``true`` will not always
-be beneficial. It is most likely to be useful if you are simulating a dnd
+be beneficial. It is most likely to be useful if you are simulating a ``dnd``
 object with commensurate bin spacing. If you are simulating per pixel, or
 are using Tobyfit to apply resolution convolution, the q-points are likely
 to be irregular so ``reduce_qpts`` may not provide a benefit.
