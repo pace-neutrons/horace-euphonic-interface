@@ -1,6 +1,11 @@
 `Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.2...HEAD>`_
 ----------
 
+- Improvements
+
+  - A ``CITATION.cff`` file has been created and  is now bundled with the ``.mltbx`` distribution
+  - The ``LICENSE`` file is now bundled with the ``.mltbx`` distribution
+
 `v0.3.2 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.1...v0.3.2>`_
 ----------
 
