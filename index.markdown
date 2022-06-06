@@ -11,7 +11,9 @@ schemadotorg:
     familyName: Le
     givenName: Manh Duc
   codeRepository: https://github.com/pace-neutrons/horace-euphonic-interface
-  datePublished: '2022-02-09T00:00:00'
+  datePublished: '2022-02-09'
+  description: Horace-Euphonic-Interface is a MATLAB Add-on to allow simulation of
+    Horace cuts with Euphonic
   identifier: https://doi.org/10.5286/SOFTWARE/HORACEEUPHONICINTERFACE
   keywords:
   - MATLAB
@@ -22,8 +24,9 @@ schemadotorg:
   - Phonopy
   - Horace
   - Euphonic
-  license: http://www.gnu.org/licenses/gpl-3.0-standalone.html
+  license: https://spdx.org/licenses/GPL-3.0-only
   name: Horace-Euphonic-Interface
+  url: https://horace-euphonic-interface.readthedocs.io/en/latest
   version: 0.3.2
 ---
 # Horace-Euphonic-Interface - Latest
