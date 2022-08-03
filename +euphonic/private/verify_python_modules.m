@@ -23,7 +23,7 @@ else
     error('euphonic_horace_interface:verify_python_modules:input','Wrong input');
 end
  
-min_py_ver = '3.6';
+min_py_ver = '3.7';
 try
     %pyenv only available from r2019b
     pye = pyenv();
@@ -43,22 +43,25 @@ end
 
 for mod = fieldnames(mods)'
     try
-        ver = char(py.pkg_resources.get_distribution(mod{:}).version);
+        installed_ver = char(py.pkg_resources.get_distribution(mod{:}).version);
     catch
         try
             % Try to get version directly
             imp_mod = py.importlib.import_module(mod{:});
-            ver = char(py.getattr(imp_mod, '__version__'));
+            installed_ver = char(py.getattr(imp_mod, '__version__'));
         catch prob
             error('euphonic_horace_interface:verify_python_modules:modVersionUnavailable',...
                 'Problem obtaining %s module version string\n%s',...
                  mod{:}, prob.message);
         end
     end
-
-    if ~semver_compatible(ver, mods.(mod{:}))
+    required_ver = mods.(mod{:});
+    if strcmp(required_ver, 'TO_BE_DETERMINED')
+        warning(['Required version of %s is "TO_BE_DETERMINED", are you ',...
+                 'using a development version of Horace-Euphonic-Interface?'], mod{:})
+    elseif ~semver_compatible(installed_ver, mods.(mod{:}))
       error('euphonic_horace_interface:verify_python_modules:modIncompatibleVersion',...
-            '%s >= %s required but %s present',mod{:}, mods.(mod{:}), ver);
+            '%s >= %s required but %s present',mod{:}, mods.(mod{:}), installed_ver);
     end
 end
 
@@ -70,7 +73,9 @@ function ret = semver_compatible(ver_str, req_ver_str)
   req_ver = semver_split(req_ver_str);
 
   ret = false;
-  if ver.major == req_ver.major
+  if ver.major > req_ver.major
+      ret = true;
+  elseif ver.major == req_ver.major
     if ver.minor > req_ver.minor
       ret = true;
     elseif ver.minor == req_ver.minor

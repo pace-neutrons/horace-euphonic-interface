@@ -9,7 +9,7 @@ function install_python_modules()
     try
         verify_python_modules(req_mods{:});
     catch ME
-        % Checks we have the right Python version (>=3.6)
+        % Checks we have the right Python version (>=3.7)
         if strcmp(ME.identifier, 'euphonic_horace_interface:verify_python_modules:pythonVersion')
             rethrow(ME);
         end
