@@ -12,7 +12,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [windows-latest, ubuntu-latest]
         matlab_version: [latest]
         python_version: [3.9]
         euphonic_version: ['']
@@ -38,8 +38,15 @@ jobs:
         with:
           python-version: ${{ matrix.python_version }}
       - name: Set Python environment variable for access by Matlab
+        if: ${{ matrix.os != 'windows-latest' }}
         shell: bash -l {0}
         run: echo "PYTHON_EX_PATH=`which python`" >> $GITHUB_ENV
+      - name: Set Python environment variable for access by Matlab (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: powershell
+        run: |
+          $pypath = (Get-Command python).Path
+          echo "PYTHON_EX_PATH=$pypath" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
       - name: Update pip and create Matlab toolbox
         shell: bash -l {0}
         run: |
