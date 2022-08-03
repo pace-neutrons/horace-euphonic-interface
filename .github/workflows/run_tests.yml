@@ -1,0 +1,97 @@
+name: Horace-Euphonic-Interface Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master, development]
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        matlab_version: [latest]
+        python_version: [3.9]
+        euphonic_version: ['']
+        # Test lowest supported Python/Euphonic versions, and lowest available Matlab
+        include:
+          - os: ubuntu-latest
+            matlab_version: R2020a
+            python_version: 3.7
+            euphonic_version: '--version 0.6.0'
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out Horace-Euphonic-Interface
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1 # v1.1.0 required for Windows/MacOS support
+        with:
+          release: ${{ matrix.matlab_version }}
+      - name: Set up Python
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Set Python environment variable for access by Matlab
+        shell: bash -l {0}
+        run: echo "PYTHON_EX_PATH=`which python`" >> $GITHUB_ENV
+      - name: Update pip and create Matlab toolbox
+        shell: bash -l {0}
+        run: |
+            python -m pip install --upgrade pip &&
+            python -m pip install requests &&
+            python create_mltbx.py
+      - name: Install base Euphonic
+        shell: bash -l {0}
+        run: |
+            python -m pip install numpy &&
+            python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version }}
+            python create_mltbx.py
+      - name: Run tests with base Euphonic
+        uses: matlab-actions/run-command@v1
+        with:
+          command: cd('test'); set_up_dependencies; run_tests('not', 'phonopy_reader')
+      - name: Install Euphonic phonopy_reader
+        shell: bash -l {0}
+        run: python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version}} --extras phonopy_reader
+      - name: Run tests with Euphonic and phonopy_reader
+        uses: matlab-actions/run-command@v1
+        with:
+          command: cd('test'); set_up_dependencies; run_tests('phonopy_reader')
+      - uses: codecov/codecov-action@v2
+        if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.matlab_version == 'latest' }}
+        with:
+          directory: test
+          files: coverage*.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload toolbox
+        if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.matlab_version == 'latest' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: horace_euphonic_interface.mltbx
+          path: mltbx/horace_euphonic_interface.mltbx
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Unit test results ${{ matrix.os }}
+          path: test/junit_report*.xml
+
+  publish-test-results:
+    needs: test
+    runs-on: ubuntu-latest
+    if: success() || failure()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        with:
+          files: artifacts/**/junit_report*.xml
