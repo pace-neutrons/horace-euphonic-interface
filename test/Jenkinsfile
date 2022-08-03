@@ -140,7 +140,7 @@ pipeline {
                         sh """
                             module load conda/3 &&
                             module load matlab/R\$MATLAB_VERSION &&
-                            conda create --name \$CONDA_ENV_NAME python=3.6 -y &&
+                            conda create --name \$CONDA_ENV_NAME python=3.7 -y &&
                             conda activate \$CONDA_ENV_NAME &&
                             python -m pip install --upgrade pip &&
                             python -m pip install requests &&
