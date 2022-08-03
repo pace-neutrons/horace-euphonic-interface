@@ -46,7 +46,7 @@ classdef EuphonicSfTest < EuphonicGenerateSfParams
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             import matlab.unittest.constraints.RelativeTolerance
-            bounds = AbsoluteTolerance(6e-4) | RelativeTolerance(0.01);
+            bounds = AbsoluteTolerance(5e-3) | RelativeTolerance(0.01);
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(expected_w_mat, 'within', bounds));
 
@@ -81,7 +81,7 @@ classdef EuphonicSfTest < EuphonicGenerateSfParams
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             import matlab.unittest.constraints.RelativeTolerance
-            bounds = AbsoluteTolerance(6e-4) | RelativeTolerance(0.01);
+            bounds = AbsoluteTolerance(5e-3) | RelativeTolerance(0.01);
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(expected_w_mat, 'within', bounds));
 

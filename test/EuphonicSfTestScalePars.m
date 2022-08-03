@@ -41,7 +41,7 @@ classdef EuphonicSfTestScalePars < EuphonicSfTestBase
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             import matlab.unittest.constraints.RelativeTolerance
-            bounds = AbsoluteTolerance(fscale*6e-4) | RelativeTolerance(0.01);
+            bounds = AbsoluteTolerance(fscale*5e-3) | RelativeTolerance(0.01);
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(fscale*expected_w_mat, 'within', bounds));
             
