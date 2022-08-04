@@ -64,9 +64,11 @@ jobs:
         with:
           command: cd('test'); set_up_dependencies; run_tests('not', 'phonopy_reader')
       - name: Install Euphonic phonopy_reader
+        if: always()
         shell: bash -l {0}
         run: python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version}} --extras phonopy_reader
       - name: Run tests with Euphonic and phonopy_reader
+        if: always()
         uses: matlab-actions/run-command@v1
         with:
           command: cd('test'); set_up_dependencies; run_tests('phonopy_reader')
