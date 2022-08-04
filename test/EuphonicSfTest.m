@@ -46,14 +46,16 @@ classdef EuphonicSfTest < EuphonicGenerateSfParams
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             import matlab.unittest.constraints.RelativeTolerance
-            bounds = AbsoluteTolerance(5e-3) | RelativeTolerance(0.01);
+            bounds = AbsoluteTolerance(6e-4) | RelativeTolerance(0.01);
+            w_mat = testCase.zero_acoustic_vals(w_mat, testCase.opts, qpts);
+            expected_w_mat = testCase.zero_acoustic_vals(expected_w_mat, testCase.opts, qpts);
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(expected_w_mat, 'within', bounds));
 
             % Ignore acoustic structure factors by setting to zero - their
             % values can be unstable at small frequencies
-            sf_mat = testCase.zero_acoustic_sf(sf_mat, testCase.opts);
-            expected_sf_mat = testCase.zero_acoustic_sf(expected_sf_mat, testCase.opts);
+            sf_mat = testCase.zero_acoustic_vals(sf_mat, testCase.opts, qpts);
+            expected_sf_mat = testCase.zero_acoustic_vals(expected_sf_mat, testCase.opts, qpts);
             % Need to sum over degenerate modes to compare structure factors
             sf_summed = testCase.sum_degenerate_modes(w_mat, sf_mat);
             expected_sf_summed = testCase.sum_degenerate_modes(w_mat, expected_sf_mat);
@@ -81,14 +83,16 @@ classdef EuphonicSfTest < EuphonicGenerateSfParams
             import matlab.unittest.constraints.IsEqualTo
             import matlab.unittest.constraints.AbsoluteTolerance
             import matlab.unittest.constraints.RelativeTolerance
-            bounds = AbsoluteTolerance(5e-3) | RelativeTolerance(0.01);
+            bounds = AbsoluteTolerance(6e-4) | RelativeTolerance(0.01);
+            w_mat = testCase.zero_acoustic_vals(w_mat, testCase.opts, qpts);
+            expected_w_mat = testCase.zero_acoustic_vals(expected_w_mat, testCase.opts, qpts);
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(expected_w_mat, 'within', bounds));
 
             % Ignore acoustic structure factors by setting to zero - their
             % values can be unstable at small frequencies
-            sf_mat = testCase.zero_acoustic_sf(sf_mat, testCase.opts);
-            expected_sf_mat = testCase.zero_acoustic_sf(expected_sf_mat, testCase.opts);
+            sf_mat = testCase.zero_acoustic_vals(sf_mat, testCase.opts, qpts);
+            expected_sf_mat = testCase.zero_acoustic_vals(expected_sf_mat, testCase.opts, qpts);
             % Need to sum over degenerate modes to compare structure factors
             sf_summed = testCase.sum_degenerate_modes(w_mat, sf_mat);
             expected_sf_summed = testCase.sum_degenerate_modes(w_mat, expected_sf_mat);
