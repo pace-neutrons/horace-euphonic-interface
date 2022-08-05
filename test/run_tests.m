@@ -2,9 +2,15 @@ function run_tests(varargin)
   % Ensure test data from euphonic_sqw_models is present
   verify_test_data();
 
-  % Collect and run tests
+  import matlab.unittest.TestSuite
+  import matlab.unittest.TestRunner
+  import matlab.unittest.plugins.CodeCoveragePlugin
+  import matlab.unittest.plugins.codecoverage.CoberturaFormat
   import matlab.unittest.selectors.HasTag
-  suite = matlab.unittest.TestSuite.fromFolder(pwd);
+  import matlab.unittest.plugins.XMLPlugin
+
+  % Collect and run tests
+  suite = TestSuite.fromFolder(pwd);
   % Skip tests which generate test data
   suite = suite.selectIf(~HasTag('generate'));
   not_tag = false;
@@ -21,14 +27,30 @@ function run_tests(varargin)
           end
       end
   end
-  results = run(suite);
+  runner = TestRunner.withTextOutput;
 
-  % Get results
-  passed = [];
-  for i = 1:length(results)
-      passed(i) = results(i).Passed;
+  % Add coverage output
+  cov_dirs = {'+euphonic', 'euphonic_sqw_models', '+light_python_wrapper'};
+  % Use full path to installed dirs
+  horeuif_path = fileparts(fileparts(which('euphonic.ForceConstants')));
+
+  for i = 1:length(cov_dirs)
+      reportFormat = CoberturaFormat(fullfile(pwd, ['coverage_', cov_dirs{i}, '.xml']));
+      coverage_plugin = CodeCoveragePlugin.forFolder(fullfile(horeuif_path, cov_dirs{i}), ...
+                                                     'Producing', reportFormat, ...
+                                                     'IncludingSubfolders', true);
+      runner.addPlugin(coverage_plugin);
+      if verLessThan('matlab', '9.12') % Can add cov for multiple folders only from R2022a
+          break;
+      end
   end
-  if ~all(passed)
-      quit(1);
+
+  % Add JUnit output - unique name so they are not overwritten on CI
+  junit_fname = ['junit_report_', computer, version('-release'), '.xml'];
+  junit_plugin = XMLPlugin.producingJUnitFormat(junit_fname);
+  runner.addPlugin(junit_plugin);
+
+  result = runner.run(suite)
+  if(any(arrayfun(@(x) x.Failed, result)))
+      error('Test failed');
   end
-end

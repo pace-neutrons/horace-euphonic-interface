@@ -26,16 +26,17 @@ classdef EuphonicSfTestBase < matlab.mock.TestCase
                 summed_sf(i,1:length(summed)) = summed;
             end
         end
-        function zeroed_sf_mat = zero_acoustic_sf(sf_mat, model_kwargs)
-            % Ignore acoustic structure factors by setting to zero - their
-            % values can be unstable at small frequencies
-            sf_mat(:, 1:3) = 0;
+        function zeroed_val_mat = zero_acoustic_vals(val_mat, model_kwargs, qpts)
+            % Ignore acoustic values at gamma by setting to zero
+            % - their values can be unstable at small frequencies
+            gamma_pts = sum(abs(qpts - round(qpts)), 2) < 1e-5;
+            val_mat(gamma_pts, 1:3) = 0;
             idx = find(strcmp('negative_e', model_kwargs));
             if length(idx) == 1 && model_kwargs{idx + 1} == true
-                n = size(sf_mat, 2)/2;
-                sf_mat(:, n+1:n+3) = 0;
+                n = size(val_mat, 2)/2;
+                val_mat(:, n+1:n+3) = 0;
             end
-            zeroed_sf_mat = sf_mat;
+            zeroed_val_mat = val_mat;
         end
     end
 end

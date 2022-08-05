@@ -31,6 +31,8 @@ classdef EuphonicHelpTest < matlab.mock.TestCase
             testCase.verifyThat(contains(txt_cc_import, '__init__'), IsTrue);
         end
         function run_euphonic_doc_tests(testCase)
+            testCase.assumeTrue(usejava('mwt'), ...
+                                'Java MathWorks Toolkit is not available');
             % Adds the "mymockfunc" folder which has the "web" function
             % since we don't want to call the built-in version.
             mockpath = fullfile(fileparts(mfilename('fullpath')), 'mymockfuncs');
