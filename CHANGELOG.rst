@@ -5,6 +5,12 @@
 
   - A ``CITATION.cff`` file has been created and  is now bundled with the ``.mltbx`` distribution
   - The ``LICENSE`` file is now bundled with the ``.mltbx`` distribution
+  - Only warn once about slow Numpy array conversion with old Matlab versions
+
+- Bug fixes:
+
+  - Fix bug which made the required version checks fail with Euphonic 1.0.0
+  - Fix bug with Numpy array conversion with Matlab 2018
 
 `v0.3.2 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.1...v0.3.2>`_
 ----------
