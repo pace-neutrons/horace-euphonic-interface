@@ -8,7 +8,7 @@ classdef EuphonicSfTest < EuphonicGenerateSfParams
     % result
     properties (MethodSetupParameter)
         use_c = {false, true, true};
-        n_threads = {int32(1), int32(1), int32(2)};
+        n_threads = {1, 1, 2};
         chunk = {5, missing, missing};
     end
     
