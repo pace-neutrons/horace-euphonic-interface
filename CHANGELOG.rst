@@ -1,10 +1,15 @@
 `Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.3...HEAD>`_
 ----------
 
+- Improvements:
+
+  - ``n_threads`` will now automatically be converted to an integer (using e.g.
+    ``int32(4)`` is no longer needed)
+
 `v0.3.3 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.2...v0.3.3>`_
 ------
 
-- Improvements
+- Improvements:
 
   - A ``CITATION.cff`` file has been created and  is now bundled with the ``.mltbx`` distribution
   - The ``LICENSE`` file is now bundled with the ``.mltbx`` distribution
