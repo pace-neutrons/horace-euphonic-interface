@@ -26,7 +26,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out Horace-Euphonic-Interface
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
       - name: Set up MATLAB
@@ -72,7 +72,7 @@ jobs:
         uses: matlab-actions/run-command@v1
         with:
           command: cd('test'); set_up_dependencies; run_tests('phonopy_reader')
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.matlab_version == 'latest' }}
         with:
           directory: test
@@ -80,13 +80,13 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Upload toolbox
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.matlab_version == 'latest' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: horace_euphonic_interface.mltbx
           path: mltbx/horace_euphonic_interface.mltbx
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Unit test results ${{ matrix.os }}
           path: test/junit_report*.xml
