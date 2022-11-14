@@ -37,8 +37,9 @@ catch ME
 end
 
 if ~semver_compatible(pyv, min_py_ver)
-  error('euphonic_horace_interface:verify_python_modules:pythonVersion',...
-        'euphonic-horace-interface requires Python >= %s', min_py_ver);
+  warning(['euphonic-horace-interface requires Python >=%s, but you '...
+	   'have version %s so things might not work as expected'],...
+	  min_py_ver, pyv);
 end
 
 for mod = fieldnames(mods)'
@@ -60,8 +61,9 @@ for mod = fieldnames(mods)'
         warning(['Required version of %s is "TO_BE_DETERMINED", are you ',...
                  'using a development version of Horace-Euphonic-Interface?'], mod{:})
     elseif ~semver_compatible(installed_ver, mods.(mod{:}))
-      error('euphonic_horace_interface:verify_python_modules:modIncompatibleVersion',...
-            '%s >= %s required but %s present',mod{:}, mods.(mod{:}), installed_ver);
+      warning(['horace-euphonic-interface requires %s >= %s, but you '...
+	       'have %s, so things might not work as expected.'],...
+	      mod{:}, mods.(mod{:}), installed_ver);
     end
 end
 

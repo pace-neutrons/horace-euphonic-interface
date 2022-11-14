@@ -5,6 +5,8 @@
 
   - ``n_threads`` will now automatically be converted to an integer (using e.g.
     ``int32(4)`` is no longer needed)
+  - Warn rather than error if the incorrect Python version or Python module
+    versions are used
 
 - Bug fixes:
 
