@@ -87,16 +87,19 @@ IDAaaS Installation
 -------------------
 
 Euphonic is installed in a Python virtual environment at
-``/usr/local/virtualenvs/euphonicenv`` and ``horace-euphonic-interface``
+``/opt/euphonic`` and ``horace-euphonic-interface``
 is already installed in Matlab as an add-on. To use Horace-Euphonic-Interface,
 you just have to make sure the Python version you are using in Matlab has
-a compatible version of Euphonic installed. To do this, just add the following
+a compatible version of Euphonic installed. To avoid Python/Matlab library
+collisions, you also need to set some library loading flags and import
+Euphonic as soon as Matlab is started. To do this, just add the following
 to your ``startup.m``:
 
 .. code-block:: matlab
 
-  pyenv('Version', '/usr/local/virtualenvs/euphonicenv/bin/python3');
+  pyenv('Version', '/opt/euphonic/bin/python3');
   py.sys.setdlopenflags(int32(10));
+  py.importlib.import_module('euphonic');
 
 Usage
 -----
