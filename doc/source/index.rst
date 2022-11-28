@@ -286,15 +286,19 @@ hyperthreading).
 
 The phonon eigenvectors, which are an intermediate step in calculating
 the scattering intensities, are particularly memory intensive, requiring
-:math:`18n^2` floating point numbers per q-point, where n is the number
-of atoms in the unit cell of your calculation. To reduce memory consumption,
-the intensity calculation can be chunked with the ``chunk`` argument to
-``CoherentCrystal``. This defines the number of q-points that are calculated
-at once. By default the calculation is chunked to calculate 5000 q-points at
-a time, this is conservative to avoid running out of memory (which can cause
-mysterious crashes!). It is best to use the largest chunk you can get away
-with based on the amount of memory available and the number of atoms
-in the unit cell.
+:math:`18n^2` floating point numbers per q-point, where :math:`n` is the
+number of atoms in the unit cell of your calculation. To reduce memory
+consumption, the intensity calculation can be chunked with the ``chunk``
+argument to ``CoherentCrystal``. This defines the number of q-points that are
+calculated at once. Generally it is best to use the largest chunk you can get
+away with based on the amount of memory available and the number of atoms in
+the unit cell, but this depends on the system architecture. If no ``chunk``
+is provided to ``CoherentCrystal``, a recommended chunk size will
+automatically be set depending on the available memory. This estimate is
+conservative to cover most use-cases and avoid running out of memory (which
+can cause  mysterious crashes!). Therefore it is possible on some systems
+using a higher chunk size might be slightly more efficient, but it is a good
+starting estimate.
 
 **Reducing Q-points**
 

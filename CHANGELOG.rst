@@ -1,12 +1,20 @@
 `Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.3...HEAD>`_
 ----------
 
+- Changes:
+
+  - ``psutil`` has been added as an optional Python dependency for automatic chunking
+
 - Improvements:
 
   - ``n_threads`` will now automatically be converted to an integer (using e.g.
     ``int32(4)`` is no longer needed)
   - Warn rather than error if the incorrect Python version or Python module
     versions are used
+  - If ``psutil`` is installed and ``chunk`` isn't provided to ``euphonic.CoherentCrystal``,
+    a recommended chunk size will be set depending on the available memory. If ``psutil``
+    is not installed, the default chunk size will be ``5000``, the same as the previous
+    default.
 
 - Bug fixes:
 
