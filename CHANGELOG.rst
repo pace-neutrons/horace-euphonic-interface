@@ -6,6 +6,12 @@
   - ``n_threads`` will now automatically be converted to an integer (using e.g.
     ``int32(4)`` is no longer needed)
 
+- Bug fixes:
+
+  - In some distributions of MATLAB the automatic conversion from Numpy ``ndarray`` using
+    MATLAB's ``double`` does not work. If it fails, convert to a regular ``py.array``
+    first, this should be more reliable.
+
 `v0.3.3 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.2...v0.3.3>`_
 ------
 
