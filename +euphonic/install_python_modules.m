@@ -18,7 +18,7 @@ function install_python_modules()
     kwargs = pyargs('stdout', pipe, 'stderr', pipe);
     mods_kw = {};
     for ii = 1:2:numel(req_mods)
-        mods_kw = [mods_kw {[req_mods{ii} '==' req_mods{ii+1}]}];
+        mods_kw = [mods_kw req_mods{ii}];
     end
     out = py.subprocess.run([{py.sys.executable '-m' 'pip' 'install'} mods_kw], kwargs);
     if out.returncode ~= 0
