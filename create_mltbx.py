@@ -5,7 +5,7 @@ import shutil
 import glob
 
 import versioneer
-import euphonic_version
+import update_module_versions
 
 __version__ = versioneer.get_version()
 
@@ -37,7 +37,7 @@ def create_mltbx():
         for line in prj:
             # FileInput redirect stdout to the file, for inplace replacement; end='' means don't add extra newlines
             print(line.replace('<param.version>1.0</param.version>', f'<param.version>{version}</param.version>'), end='')
-    euphonic_version.update_euphonic_version()
+    update_module_versions.update_module_versions()
     # shutil.copytree expects destination to not exist
     for dest_folder in ['+light_python_wrapper', 'euphonic_sqw_models', '+euphonic']:
         if os.path.isdir('mltbx/' + dest_folder): shutil.rmtree('mltbx/' + dest_folder)

@@ -15,7 +15,11 @@
 % along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 function verify_python_modules(varargin)
-if nargin > 1 && ~isstruct(varargin{1})
+if isempty(varargin)
+    warning(['No version requirements passed to verify_python_modules, ' ...
+             'are you using a development version of Horace-Euphonic-Interface?']);
+    return
+elseif nargin > 1 && ~isstruct(varargin{1})
     mods = struct(varargin{:});
 elseif nargin > 1 && isstruct(varargin{1})
     mods = varargin{1};
@@ -56,11 +60,8 @@ for mod = fieldnames(mods)'
                  mod{:}, prob.message);
         end
     end
-    required_ver = mods.(mod{:});
-    if strcmp(required_ver, 'TO_BE_DETERMINED')
-        warning(['Required version of %s is "TO_BE_DETERMINED", are you ',...
-                 'using a development version of Horace-Euphonic-Interface?'], mod{:})
-    elseif ~semver_compatible(installed_ver, mods.(mod{:}))
+
+    if ~semver_compatible(installed_ver, mods.(mod{:}))
       warning(['horace-euphonic-interface requires %s >= %s, but you '...
 	       'have %s, so things might not work as expected.'],...
 	      mod{:}, mods.(mod{:}), installed_ver);
