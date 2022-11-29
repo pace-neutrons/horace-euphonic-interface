@@ -15,8 +15,10 @@ classdef CoherentCrystal < light_python_wrapper.light_python_wrapper
         pyobj = [];  % Reference to python object
         classname = 'euphonic_sqw_models.CoherentCrystal';
     end
-    properties (Hidden)
+    properties (Hidden, Constant)
         is_initialised = euphonic_on();
+    end
+    properties (Hidden)
         is_redirected = light_python_wrapper.light_python_wrapper.redirect_python_warnings();
     end
     methods
