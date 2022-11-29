@@ -3,7 +3,7 @@
 
 - Changes:
 
-  - ``psutil`` has been added as an optional Python dependency for automatic chunking
+  - ``psutil`` has been added as a Python dependency for automatic chunking
 
 - Improvements:
 
@@ -11,16 +11,18 @@
     ``int32(4)`` is no longer needed)
   - Warn rather than error if the incorrect Python version or Python module
     versions are used
-  - If ``psutil`` is installed and ``chunk`` isn't provided to ``euphonic.CoherentCrystal``,
-    a recommended chunk size will be set depending on the available memory. If ``psutil``
-    is not installed, the default chunk size will be ``5000``, the same as the previous
-    default.
+  - If ``chunk`` isn't provided to ``euphonic.CoherentCrystal``, a recommended chunk
+    size will be set depending on the available memory
+  - ``install_python_modules.m`` will now install the latest version of dependencies
+    instead of the oldest
 
 - Bug fixes:
 
   - In some distributions of MATLAB the automatic conversion from Numpy ``ndarray`` using
     MATLAB's ``double`` does not work. If it fails, convert to a regular ``py.array``
     first, this should be more reliable.
+  - In some MATLAB versions ``py.sys.executable`` actually points to the MATLAB executable
+    so the ``install_python_modules`` script wouldn't work. This has been fixed.
 
 `v0.3.3 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.2...v0.3.3>`_
 ------

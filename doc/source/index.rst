@@ -14,10 +14,11 @@ General Installation
 
 1. Prerequisites
 ^^^^^^^^^^^^^^^^
-Ensure you have both Horace and Euphonic installed:
+Ensure you have both Horace, Euphonic and the Python package ``psutil`` installed:
 
 - `Horace docs <https://horace.isis.rl.ac.uk/>`_ 
 - `Euphonic docs <https://euphonic.readthedocs.io>`_
+- `psutil <https://pypi.org/project/psutil/>`_
 
 2. Set up Python in Matlab
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
