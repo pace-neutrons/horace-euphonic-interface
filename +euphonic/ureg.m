@@ -6,8 +6,7 @@ classdef ureg < light_python_wrapper.light_python_wrapper
         pyobj = [];  % Reference to python object
         classname = 'euphonic.ureg';
     end
-    % Constant properties are evaluated when the *class* is first loaded in memory
-    properties (Constant, Hidden)
+    properties (Hidden)
         is_initialised = euphonic_on();
     end
     methods

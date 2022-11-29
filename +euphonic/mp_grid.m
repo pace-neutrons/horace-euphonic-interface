@@ -15,7 +15,7 @@ classdef mp_grid < light_python_wrapper.light_python_wrapper
         pyobj = [];  % Reference to python object
         classname = 'euphonic.util.mp_grid';
     end
-    properties (Constant, Hidden)
+    properties (Hidden)
         is_initialised = euphonic_on();
     end
     methods
