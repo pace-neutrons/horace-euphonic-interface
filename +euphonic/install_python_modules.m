@@ -20,7 +20,7 @@ function install_python_modules()
     catch ME
         if (strcmp(ME.identifier,'MATLAB:UndefinedFunction'))
             % Pyversion is deprecated but use if pyenv not available
-            [ver, py_exe, isloaded] = pyversion(py_ex_path);
+            [~, py_exe, ~] = pyversion(py_ex_path);
         else
             rethrow(ME);
         end
