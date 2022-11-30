@@ -16,9 +16,7 @@ classdef ForceConstants < light_python_wrapper.light_python_wrapper
         eu = [];     % Reference to euphonic module
         classname = 'euphonic.ForceConstants'; 
     end
-    % Constant properties are evaluated when the *class* is loaded in
-    % memory, rather than when an object is constructed.
-    properties (Constant, Hidden)
+    properties (Hidden)
         is_initialised = euphonic_on();
         is_redirected = light_python_wrapper.light_python_wrapper.redirect_python_warnings();
     end

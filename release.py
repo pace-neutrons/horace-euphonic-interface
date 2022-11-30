@@ -8,7 +8,6 @@ import shutil
 import glob
 
 import versioneer
-import euphonic_version
 from update_dependencies import update_submodules
 from create_mltbx import create_mltbx
 
