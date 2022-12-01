@@ -4,8 +4,10 @@ abstract: "Horace-Euphonic-Interface is a MATLAB Add-on to allow simulation of H
 authors:
   - family-names: "Fair"
     given-names: "Rebecca L."
+    orcid: https://orcid.org/0000-0002-0926-2942
   - family-names: "Le"
-    given-names: "Manh Duc"
+    given-names: "Manh D."
+    orcid: https://orcid.org/0000-0003-3012-6053
 title: "Horace-Euphonic-Interface"
 doi: 10.5286/SOFTWARE/HORACEEUPHONICINTERFACE
 version: 0.3.2
