@@ -4,12 +4,14 @@ schemadotorg:
   '@context': https://schema.org
   '@type': SoftwareSourceCode
   author:
-  - '@type': Person
+  - '@id': https://orcid.org/0000-0002-0926-2942
+    '@type': Person
     familyName: Fair
     givenName: Rebecca L.
-  - '@type': Person
+  - '@id': https://orcid.org/0000-0003-3012-6053
+    '@type': Person
     familyName: Le
-    givenName: Manh Duc
+    givenName: Manh D.
   codeRepository: https://github.com/pace-neutrons/horace-euphonic-interface
   datePublished: '2022-02-09'
   description: Horace-Euphonic-Interface is a MATLAB Add-on to allow simulation of
