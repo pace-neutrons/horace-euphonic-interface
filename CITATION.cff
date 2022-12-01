@@ -10,8 +10,8 @@ authors:
     orcid: https://orcid.org/0000-0003-3012-6053
 title: "Horace-Euphonic-Interface"
 doi: 10.5286/SOFTWARE/HORACEEUPHONICINTERFACE
-version: 0.3.2
-date-released: 2022-02-09
+version: 1.0.0
+date-released: 2022-12-01
 license: GPL-3.0-only
 repository-code: https://github.com/pace-neutrons/horace-euphonic-interface
 url: https://horace-euphonic-interface.readthedocs.io
