@@ -62,7 +62,7 @@ jobs:
       - name: Run tests with base Euphonic
         uses: matlab-actions/run-command@v1
         with:
-          command: cd('test'); set_up_dependencies; run_tests('not', 'phonopy_reader')
+          command: cd('test'); set_up_dependencies; run_tests('not', 'phonopy_reader', 'not', 'brille')
       - name: Install Euphonic phonopy_reader
         if: always()
         shell: bash -l {0}
@@ -72,6 +72,15 @@ jobs:
         uses: matlab-actions/run-command@v1
         with:
           command: cd('test'); set_up_dependencies; run_tests('phonopy_reader')
+      - name: Install brille
+        if: always()
+        shell: bash -l {0}
+        run: python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version}} --extras brille
+      - name: Run tests with Euphonic and Brille
+        if: always()
+        uses: matlab-actions/run-command@v1
+        with:
+          command: cd('test'); set_up_dependencies; run_tests('brille')
       - uses: codecov/codecov-action@v3
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.matlab_version == 'latest' }}
         with:
