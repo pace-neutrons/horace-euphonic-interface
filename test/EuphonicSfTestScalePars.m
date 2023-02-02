@@ -42,15 +42,15 @@ classdef EuphonicSfTestScalePars < EuphonicSfTestBase
             import matlab.unittest.constraints.AbsoluteTolerance
             import matlab.unittest.constraints.RelativeTolerance
             bounds = AbsoluteTolerance(fscale*6e-4) | RelativeTolerance(0.01);
-            w_mat = testCase.zero_acoustic_vals(w_mat, coh_kwargs, qpts);
-            expected_w_mat = testCase.zero_acoustic_vals(expected_w_mat, coh_kwargs, qpts);
+            w_mat = testCase.zero_acoustic_vals(w_mat, expected_w_mat);
+            expected_w_mat = testCase.zero_acoustic_vals(expected_w_mat, expected_w_mat);
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(fscale*expected_w_mat, 'within', bounds));
             
             % Ignore acoustic structure factors by setting to zero - their
             % values can be unstable at small frequencies
-            sf_mat = testCase.zero_acoustic_vals(sf_mat, coh_kwargs, qpts);
-            expected_sf_mat = testCase.zero_acoustic_vals(expected_sf_mat, coh_kwargs, qpts);
+            sf_mat = testCase.zero_acoustic_vals(sf_mat, expected_w_mat);
+            expected_sf_mat = testCase.zero_acoustic_vals(expected_sf_mat, expected_w_mat);
             % Need to sum over degenerate modes to compare structure factors
             sf_summed = testCase.sum_degenerate_modes(w_mat, sf_mat);
             expected_sf_summed = testCase.sum_degenerate_modes(w_mat, expected_sf_mat);
