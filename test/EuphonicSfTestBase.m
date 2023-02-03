@@ -1,3 +1,4 @@
+
 classdef EuphonicSfTestBase < matlab.mock.TestCase
 
     methods (Static)
@@ -37,7 +38,8 @@ classdef EuphonicSfTestBase < matlab.mock.TestCase
                 lim = 1;
             end
             [rows, cols] = find(abs(w_mat) < lim);
-            val_mat(rows, cols) = 0;
+            idx = sub2ind(size(val_mat), rows, cols);
+            val_mat(idx) = 0;
             zeroed_val_mat = val_mat;
         end
     end

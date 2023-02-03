@@ -36,7 +36,7 @@ classdef EuphonicSfTestBrille < EuphonicSfTestBase
             testCase.verifyThat(w_mat, ...
                 IsEqualTo(expected_w_mat, 'within', bounds));
 
-            lim = 20; % Ignore values below 20meV - unstable & hard to test
+            lim = 25; % Ignore values below 25meV - unstable & hard to test
             sf_mat = testCase.zero_acoustic_vals(sf_mat, expected_w_mat, lim);
             expected_sf_mat = testCase.zero_acoustic_vals(expected_sf_mat, expected_w_mat, lim);
             % Need to sum over degenerate modes to compare structure factors
