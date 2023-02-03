@@ -15,13 +15,13 @@ jobs:
         os: [windows-latest, ubuntu-latest]
         matlab_version: [latest]
         python_version: [3.9]
-        euphonic_version: ['']
+        euphonic_version: ['--branch 95_brille_integration']
         # Test lowest supported Python/Euphonic versions, and lowest available Matlab
         include:
           - os: ubuntu-latest
             matlab_version: R2020a
             python_version: 3.7
-            euphonic_version: '--version 0.6.0'
+            euphonic_version: '--branch 95_brille_integration'
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
