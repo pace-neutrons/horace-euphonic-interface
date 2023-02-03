@@ -17,7 +17,7 @@ classdef EuphonicSfTestBrille < EuphonicSfTestBase
                 fc, 'grid_npts', 1000, 'interpolation_kwargs', struct('asr', 'reciprocal'));
 
             opts = {'temperature', 300};
-            coherentsqw = euphonic.CoherentCrystal(bri, 'useparallel', true, opts{:});
+            coherentsqw = euphonic.CoherentCrystal(bri, 'threads', 4, 'useparallel', true, opts{:});
             [w, sf] = coherentsqw.horace_disp(qpts(:, 1), qpts(:, 2), qpts(:, 3), {});
             w_mat = transpose(cell2mat(w'));
             sf_mat = transpose(cell2mat(sf'));
