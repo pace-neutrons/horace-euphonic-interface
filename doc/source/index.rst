@@ -253,6 +253,7 @@ An example script simulating a simple cut is below:
      'conversion_mat', [1 0 0; 0 1 0; 0 0 -1],
      'debye_waller_grid', [6 6 6], ...
      'temperature', 100, ...
+     'dipole_parameter', 0.75, ...
      'asr', 'reciprocal', ...
      'use_c', true, ...
      'n_threads', 4);
@@ -269,6 +270,57 @@ An example script simulating a simple cut is below:
   plot(cut_sim);
 
 
+Faster Interpolation with Brille
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+From version ``1.2.0``, Euphonic can use the `Brille <https://brille.github.io/>`_ library to perform linear (rather than Fourier) interpolation of phonon frequencies and eigenvectors.
+Linear interpolation may be less accurate than the Fourier interpolation performed by ``ForceConstants``,
+but should be faster for large unit cells, particularly those that require the expensive dipole correction calculation.
+You should test this on your particular machine and material first to see if it provides a performance benefit.
+For more details on how this works, and what the various options mean, see the `Euphonic BrilleInterpolator docs <https://euphonic.readthedocs.io/en/stable/brille-interpolator.html>`_
+
+A ``BrilleInterpolator`` object can be created from a ``ForceConstants`` object, and can then be used in ``horace_disp`` just like ``ForceConstants``.
+A full example showing this is below:
+
+.. code-block:: matlab
+
+  % Read in experimental cut
+  cut = read_horace('quartz.d2d');
+
+  % Read force constants
+  fc = euphonic.ForceConstants.from_castep('quartz.castep_bin')
+
+  % Create BrilleInterpolator from the force constants
+  % Note that any arguments you would pass to
+  % ForceConstants.calculate_qpoint_phonon_modes are passed here as
+  % 'interpolation_kwargs' to be used when creating the Brille grid
+  bri = euphonic.BrilleInterpolator.from_force_constants(...
+      fc, ...
+      'grid_npts', 5000, ...
+      'interpolation_kwargs', struct('dipole_parameter', 0.75, ...
+                                     'use_c', true, ...
+                                     'n_threads', 4, ...));
+
+  % Set up model
+  % Pass in BrilleInterpolator here instead of force constants
+  coh_model = euphonic.CoherentCrystal(...
+     bri, ...
+     'conversion_mat', [1 0 0; 0 1 0; 0 0 -1],
+     'debye_waller_grid', [6 6 6], ...
+     'temperature', 100, ...
+     'useparallel', true, ...
+     'threads', 4);
+
+  % Simulate
+  intensity_scale = 100;
+  frequency_scale = 0.9;
+  effective_fwhm = 1;
+  cut_sim = disp2sqw_eval(...
+     cut, @coh_model.horace_disp, {'intensity_scale', intensity_scale, 'frequency_scale', frequency_scale}, effective_fwhm);
+
+  % Plot
+  plot(cut_sim);
+
 Performance and Memory Tips
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -280,7 +332,8 @@ for the type of work you're doing and your computing resources.
 Euphonic will make use of the C Extension by default, and automatically choose
 the number of threads using the Python function ``multiprocessing.cpu_count``.
 However, this can be overridden by the ``use_c`` and ``n_threads`` arguments
-to ``CoherentCrystal``. Ensure that if these arguments are used, they are
+to ``CoherentCrystal`` (or ``useparallel`` and ``threads`` if you're using
+``BrilleInterpolator``). Ensure that if these arguments are used, they are
 appropriate to the computing resource you are using. Generally ``use_c``
 should be  ``true`` and ``n_threads`` should be the same as the number of
 cores (or the same as the number of logical cores if your system has
@@ -332,6 +385,10 @@ computation required. This can be done with the ``dipole_parameter`` argument
 to ``CoherentCrystal``. Euphonic has a Python command-line tool,
 `euphonic-optimise-dipole-parameter <https://euphonic.readthedocs.io/en/stable/dipole-parameter-script.html>`_
 which can help to tune this argument.
+
+**Use Linear Interpolation with Brille**
+
+See `Faster Interpolation with Brille`_
 
 
 .. toctree::
