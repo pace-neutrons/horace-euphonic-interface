@@ -27,24 +27,18 @@ classdef EuphonicSfTestBrille < EuphonicSfTestBase
             expected_w_mat = expected_w_mat(1:8,:);
             expected_sf_mat = expected_sf_mat(1:8,:);
 
-            import matlab.unittest.constraints.IsEqualTo
-            import matlab.unittest.constraints.AbsoluteTolerance
-            import matlab.unittest.constraints.RelativeTolerance
-            bounds = AbsoluteTolerance(3) | RelativeTolerance(0.01);
             w_mat = testCase.zero_acoustic_vals(w_mat, expected_w_mat);
             expected_w_mat = testCase.zero_acoustic_vals(expected_w_mat, expected_w_mat);
-            testCase.verifyThat(w_mat, ...
-                IsEqualTo(expected_w_mat, 'within', bounds));
+            mean_frequency_residual = mean(abs(w_mat - expected_w_mat), 'all');
+            testCase.verifyLessThan(mean_frequency_residual, 0.15);
 
-            lim = 25; % Ignore values below 25meV - unstable & hard to test
-            sf_mat = testCase.zero_acoustic_vals(sf_mat, expected_w_mat, lim);
-            expected_sf_mat = testCase.zero_acoustic_vals(expected_sf_mat, expected_w_mat, lim);
+            sf_mat = testCase.zero_acoustic_vals(sf_mat, expected_w_mat);
+            expected_sf_mat = testCase.zero_acoustic_vals(expected_sf_mat, expected_w_mat);
             % Need to sum over degenerate modes to compare structure factors
             sf_summed = testCase.sum_degenerate_modes(expected_w_mat, sf_mat);
             expected_sf_summed = testCase.sum_degenerate_modes(expected_w_mat, expected_sf_mat);
-            bounds = AbsoluteTolerance(0.01) | RelativeTolerance(0.01);
-            testCase.verifyThat(sf_summed, ...
-                IsEqualTo(expected_sf_summed, 'within', bounds));
+            mean_sf_residual = mean(abs(sf_summed - expected_sf_summed), 'all');
+            testCase.verifyLessThan(mean_sf_residual, 0.004);
         end
     end
 end
