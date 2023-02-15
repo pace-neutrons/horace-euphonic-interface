@@ -1,3 +1,4 @@
+
 classdef EuphonicSfTestBase < matlab.mock.TestCase
 
     methods (Static)
@@ -26,15 +27,19 @@ classdef EuphonicSfTestBase < matlab.mock.TestCase
                 summed_sf(i,1:length(summed)) = summed;
             end
         end
-        function zeroed_val_mat = zero_acoustic_vals(val_mat, w_mat)
+        function zeroed_val_mat = zero_acoustic_vals(val_mat, w_mat, lim)
             % Cannot check qpts are gamma because conversion_mat might
             % mean they are not actually gamma once converted to Euphonic
             % coordinates. Instead just set to zero where frequencies
             % are low.
             % Ignore acoustic values at gamma by setting to zero
             % - their values can be unstable at small frequencies
-            [rows, cols] = find(abs(w_mat) < 1);
-            val_mat(rows, cols) = 0;
+            if nargin < 3
+                lim = 1;
+            end
+            [rows, cols] = find(abs(w_mat) < lim);
+            idx = sub2ind(size(val_mat), rows, cols);
+            val_mat(idx) = 0;
             zeroed_val_mat = val_mat;
         end
     end

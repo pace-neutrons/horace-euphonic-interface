@@ -1,6 +1,18 @@
 `Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v1.0.0...HEAD>`_
 ----------
 
+- New Features:
+
+  - You can now perform linear interpolation of phonon frequencies and
+    eigenvectors with the `Brille <https://brille.github.io/stable/index.html>`_
+    library using the new ``euphonic.brille.BrilleInterpolator``
+    object. This should provide performance improvements for large unit
+    cells which require the dipole correction.
+
+- Dependency changes:
+
+  - Euphonic version dependency increased from >=0.6.0 to >=1.2.0
+
 `v1.0.0 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v0.3.3...v1.0.0>`_
 ------
 

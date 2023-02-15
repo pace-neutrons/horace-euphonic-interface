@@ -21,9 +21,12 @@ jobs:
           - os: ubuntu-latest
             matlab_version: R2020a
             python_version: 3.7
-            euphonic_version: '--version 0.6.0'
+            euphonic_version: '--version 1.2.0'
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}  # Needed to use conda environments
     steps:
       - name: Check out Horace-Euphonic-Interface
         uses: actions/checkout@v3
@@ -39,7 +42,6 @@ jobs:
           python-version: ${{ matrix.python_version }}
       - name: Set Python environment variable for access by Matlab
         if: ${{ matrix.os != 'windows-latest' }}
-        shell: bash -l {0}
         run: echo "PYTHON_EX_PATH=`which python`" >> $GITHUB_ENV
       - name: Set Python environment variable for access by Matlab (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
@@ -48,13 +50,11 @@ jobs:
           $pypath = (Get-Command python).Path
           echo "PYTHON_EX_PATH=$pypath" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
       - name: Update pip and create Matlab toolbox
-        shell: bash -l {0}
         run: |
             python -m pip install --upgrade pip &&
             python -m pip install requests &&
             python create_mltbx.py
       - name: Install base Euphonic
-        shell: bash -l {0}
         run: |
             python -m pip install numpy &&
             python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version }}
@@ -62,16 +62,23 @@ jobs:
       - name: Run tests with base Euphonic
         uses: matlab-actions/run-command@v1
         with:
-          command: cd('test'); set_up_dependencies; run_tests('not', 'phonopy_reader')
+          command: cd('test'); set_up_dependencies; run_tests('not', 'phonopy_reader', 'not', 'brille')
       - name: Install Euphonic phonopy_reader
         if: always()
-        shell: bash -l {0}
         run: python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version}} --extras phonopy_reader
       - name: Run tests with Euphonic and phonopy_reader
         if: always()
         uses: matlab-actions/run-command@v1
         with:
           command: cd('test'); set_up_dependencies; run_tests('phonopy_reader')
+      - name: Install brille
+        if: always()
+        run: python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version}} --extras brille
+      - name: Run tests with Euphonic and Brille
+        if: always()
+        uses: matlab-actions/run-command@v1
+        with:
+          command: cd('test'); set_up_dependencies; run_tests('brille')
       - uses: codecov/codecov-action@v3
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.matlab_version == 'latest' }}
         with:
