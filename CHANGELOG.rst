@@ -1,5 +1,8 @@
-`Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v1.0.0...HEAD>`_
+`Unreleased <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v1.1.0...HEAD>`_
 ----------
+
+`v1.1.0 <https://github.com/pace-neutrons/horace-euphonic-interface/compare/v1.0.0...v1.1.0>`_
+------
 
 - New Features:
 
