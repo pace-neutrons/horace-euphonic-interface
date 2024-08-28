@@ -6,6 +6,9 @@ function install_python_modules()
     % >>  euphonic.install_python_modules
 
     req_mods = required_modules;
+    if isempty(req_mods)
+        return
+    end
 
     pipe = py.subprocess.PIPE;
     kwargs = pyargs('stdout', pipe, 'stderr', pipe);
