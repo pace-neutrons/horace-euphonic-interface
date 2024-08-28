@@ -4,11 +4,12 @@ import fileinput
 def get_module_versions():
     # gets the required module versions from `min_requirements.txt` file
     curdir = os.path.dirname(os.path.abspath(__file__))
-    req_file = os.path.join(
-        curdir, 'euphonic_sqw_models', 'min_requirements.txt')
-    if not os.path.isfile(req_file):
-        from update_dependencies import update_submodules
-        update_submodules('euphonic_sqw_models')
+    for submodule in [['light_python_wrapper', '+light_python_wrapper'],
+                      ['euphonic_sqw_models', 'min_requirements.txt']]:
+        if not os.path.isfile(os.path.join(curdir, *submodule)):
+            from update_dependencies import update_submodules
+            update_submodules(submodule[0])
+    req_file = os.path.join(curdir, 'euphonic_sqw_models', 'min_requirements.txt')
     with open(req_file, 'r') as minreq:
         reqstrs = minreq.read().splitlines()
     reqmods = []
