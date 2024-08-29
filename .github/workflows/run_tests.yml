@@ -14,14 +14,13 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest]
         matlab_version: [latest]
-        python_version: [3.9]
+        python_version: [3.11]
         euphonic_version: ['']
         # Test lowest supported Python/Euphonic versions, and lowest available Matlab
         include:
           - os: ubuntu-latest
-            matlab_version: R2020a
-            python_version: 3.7
-            euphonic_version: '--version 1.2.0'
+            matlab_version: R2021b
+            python_version: 3.9
       fail-fast: false
     runs-on: ${{ matrix.os }}
     defaults:
@@ -29,54 +28,48 @@ jobs:
         shell: bash -l {0}  # Needed to use conda environments
     steps:
       - name: Check out Horace-Euphonic-Interface
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab@v1 # v1.1.0 required for Windows/MacOS support
+        uses: matlab-actions/setup-matlab@v2 # v1.1.0 required for Windows/MacOS support
         with:
           release: ${{ matrix.matlab_version }}
       - name: Set up Python
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
           python-version: ${{ matrix.python_version }}
-      - name: Set Python environment variable for access by Matlab
-        if: ${{ matrix.os != 'windows-latest' }}
-        run: echo "PYTHON_EX_PATH=`which python`" >> $GITHUB_ENV
-      - name: Set Python environment variable for access by Matlab (Windows)
+          auto-update-conda: true
+          conda-solver: libmamba
+          channels: conda-forge
+      - name: Set up Python environment (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         shell: powershell
         run: |
+          python -m pip install requests psutil numpy==1.26.4 brille==0.7.0 euphonic[phonopy_reader]
           $pypath = (Get-Command python).Path
           echo "PYTHON_EX_PATH=$pypath" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-      - name: Update pip and create Matlab toolbox
+      - name: Set up Python environment (Linux)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-            python -m pip install --upgrade pip &&
-            python -m pip install requests &&
-            python create_mltbx.py
-      - name: Install base Euphonic
-        run: |
-            python -m pip install numpy &&
-            python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version }}
-            python create_mltbx.py
+          python -m pip install requests psutil numpy==1.26.4 euphonic[phonopy_reader,brille]
+          echo "PYTHON_EX_PATH=`which python`" >> $GITHUB_ENV
+      - name: Create Matlab toolbox
+        run: python create_mltbx.py
+      - name: create_toolbox
+        uses: matlab-actions/run-command@v2
+        with:
+          command: cd('mltbx'); create_mltbx()
       - name: Run tests with base Euphonic
-        uses: matlab-actions/run-command@v1
+        uses: matlab-actions/run-command@v2
         with:
           command: cd('test'); set_up_dependencies; run_tests('not', 'phonopy_reader', 'not', 'brille')
-      - name: Install Euphonic phonopy_reader
-        if: always()
-        run: python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version}} --extras phonopy_reader
       - name: Run tests with Euphonic and phonopy_reader
-        if: always()
-        uses: matlab-actions/run-command@v1
+        uses: matlab-actions/run-command@v2
         with:
           command: cd('test'); set_up_dependencies; run_tests('phonopy_reader')
-      - name: Install brille
-        if: always()
-        run: python euphonic_sqw_models/apply_requirements.py ${{ matrix.euphonic_version}} --extras brille
       - name: Run tests with Euphonic and Brille
-        if: always()
-        uses: matlab-actions/run-command@v1
+        uses: matlab-actions/run-command@v2
         with:
           command: cd('test'); set_up_dependencies; run_tests('brille')
       - uses: codecov/codecov-action@v3

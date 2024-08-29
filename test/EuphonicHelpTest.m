@@ -57,11 +57,17 @@ classdef EuphonicHelpTest < matlab.mock.TestCase
             import matlab.unittest.constraints.IsFalse
             txt_fc_noimport = eval_doc('doc euphonic.ForceConstants');
             txt_fc_import = eval_doc_import('doc euphonic.ForceConstants');
-            % Checks both cases called "web" with the "-helpbrowser" argument
-            testCase.verifySubstring(txt_fc_noimport{2}, 'helpbrowser');
-            testCase.verifySubstring(txt_fc_import{2}, 'helpbrowser');
-            % Checks the two text are different
-            testCase.verifyThat(strcmp(txt_fc_noimport{1}, txt_fc_import{1}), IsFalse);
+            if verLessThan('matlab', '9.13')
+                % Checks both cases called "web" with the "-helpbrowser" argument
+                testCase.verifySubstring(txt_fc_noimport{2}, 'helpbrowser');
+                testCase.verifySubstring(txt_fc_import{2}, 'helpbrowser');
+                % Checks the two text are different
+                testCase.verifyThat(strcmp(txt_fc_noimport{1}, txt_fc_import{1}), IsFalse);
+            else
+                % Doc system changed in R2020b does not use the "web" command any more.
+                testCase.verifySubstring(txt_fc_noimport{1}.Topic, 'ForceConstants');
+                testCase.verifySubstring(txt_fc_import{2}, 'helpbrowser');
+            end
             % Checks we still have hyperlinks in the imported version
             testCase.verifyThat(contains(txt_fc_import{1}, 'href'), IsTrue);
             % Checks that __init__ method is included

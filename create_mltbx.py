@@ -1,58 +1,79 @@
-import os
+import fileinput
 import re
-import subprocess
 import shutil
-import glob
+import subprocess
+from pathlib import Path
 
-import versioneer
 import update_module_versions
+import versioneer
 
 __version__ = versioneer.get_version()
 
-HELPDOCSTR = '\n' \
-    '    % Overloaded help command to display Python help in Matlab\n' \
-    '    % To use it, please type\n' \
-    '    %\n' \
-    '    % >> import euphonic.help\n' \
-    '    % >> help <topic>\n' \
-    '    %\n' \
-    '    % where <topic> is a Python class or method which has been wrapped for use in Matlab.\n' \
-    '    % If the topic is not wrapped, the normal Matlab help is displayed.\n' \
+HELPDOCSTR = """
+    % Overloaded help command to display Python help in Matlab
+    % To use it, please type
+    %
+    % >> import euphonic.help
+    % >> help <topic>
+    %
+    % where <topic> is a Python class or method which has been wrapped for use in Matlab.
+    % If the topic is not wrapped, the normal Matlab help is displayed.
+"""
 
-def replace_matlab_docstring(filename, replacement_str):
-    with open(filename) as f:
-        txt = f.read()
-    cm = [m.start() for m in re.finditer(r'\n\s*%', txt)]
-    nl = [m.start() for m in re.finditer(r'\n', txt)]
-    idx = [cm[idx] for idx in range(len(cm)) if cm[idx] == nl[idx]]
+
+def replace_matlab_docstring(filename: Path, replacement_str: str):
+    txt = filename.read_text(encoding="utf-8")
+    comment = [m.start() for m in re.finditer(r'\n\s*%', txt)]
+    newline = [m.start() for m in re.finditer(r'\n', txt)]
+    idx = [cm for cm, nl in zip(comment, newline) if cm == nl]
     newtxt = txt[:idx[0]] + replacement_str + txt[idx[-1]:]
-    with open(filename, 'w') as f:
-        f.write(newtxt)
+    filename.write_text(newtxt, encoding="utf-8")
 
-def create_mltbx():
-    import fileinput
-    # replace version string
-    version = __version__.split('+')[0] if '+' in __version__ else __version__  # Matlab only accepts numbers
-    with fileinput.FileInput('mltbx/horace_euphonic_interface.prj', inplace=True) as prj:
+
+def create_mltbx(base_path: Path):
+    """
+    Create toolbox assuming files relative to `base_path`
+    """
+
+    # replace version string as MATLAB only accepts numbers
+    version = __version__.split('+')[0] if '+' in __version__ else __version__
+    base_path = base_path.absolute()
+
+    lpw_src = base_path / "light_python_wrapper"
+    eup_src = base_path / "+euphonic"
+    mdl_src = base_path / "euphonic_sqw_models" / "euphonic_sqw_models"
+    mltbx_path = base_path / 'mltbx'
+    lpw_dest = mltbx_path / "+light_python_wrapper"
+    eup_dest = mltbx_path / "+euphonic"
+    mdl_dest = mltbx_path / "euphonic_sqw_models" / "euphonic_sqw_models"
+
+    with fileinput.FileInput(mltbx_path / 'horace_euphonic_interface.prj', inplace=True) as prj:
         for line in prj:
-            # FileInput redirect stdout to the file, for inplace replacement; end='' means don't add extra newlines
-            print(line.replace('<param.version>1.0</param.version>', f'<param.version>{version}</param.version>'), end='')
+            # FileInput redirects stdout to the file, for inplace replacement
+            print(line.replace('<param.version>1.0</param.version>',
+                               f'<param.version>{version}</param.version>'), end='')
+
     update_module_versions.update_module_versions()
     # shutil.copytree expects destination to not exist
     for dest_folder in ['+light_python_wrapper', 'euphonic_sqw_models', '+euphonic']:
-        if os.path.isdir('mltbx/' + dest_folder): shutil.rmtree('mltbx/' + dest_folder)
-    shutil.copyfile('LICENSE', 'mltbx/LICENSE')
-    shutil.copyfile('CITATION.cff', 'mltbx/CITATION.cff')
-    shutil.copytree('light_python_wrapper/+light_python_wrapper', 'mltbx/+light_python_wrapper')
-    shutil.copytree('euphonic_sqw_models/euphonic_sqw_models', 'mltbx/euphonic_sqw_models/euphonic_sqw_models')
-    shutil.copytree('+euphonic', 'mltbx/+euphonic')
-    for fil in glob.glob('light_python_wrapper/helputils/*.m'): shutil.copy(fil, 'mltbx/+euphonic')
-    for fil in glob.glob('light_python_wrapper/helputils/private/*.m'): shutil.copy(fil, 'mltbx/+euphonic/private')
-    replace_matlab_docstring('mltbx/+euphonic/help.m', HELPDOCSTR)
-    replace_matlab_docstring('mltbx/+euphonic/doc.m', HELPDOCSTR.replace('help', 'doc'))
-    subprocess.run(['matlab', '-batch', 'create_mltbx'], cwd='mltbx')
-    print('.mltbx created')
+        if (dest := mltbx_path / dest_folder).is_dir():
+            shutil.rmtree(dest)
+
+    for file in ('LICENSE', 'CITATION.cff'):
+        shutil.copy(file, mltbx_path)
+
+    shutil.copytree(lpw_src / "+light_python_wrapper", lpw_dest)
+    shutil.copytree(mdl_src, mdl_dest)
+    shutil.copytree(eup_src, eup_dest)
+    for fil in (lpw_src / "helputils").glob("*.m"):
+        shutil.copy(fil, eup_dest)
+    for fil in (lpw_src / "helputils/private").glob("*.m"):
+        shutil.copy(fil, eup_dest / "private")
+
+    replace_matlab_docstring(eup_dest / "help.m", HELPDOCSTR)
+    replace_matlab_docstring(eup_dest / "doc.m", HELPDOCSTR.replace('help', 'doc'))
+
 
 if __name__ == '__main__':
-    create_mltbx()
-
+    curr_path = Path(__file__).parent
+    create_mltbx(curr_path)
