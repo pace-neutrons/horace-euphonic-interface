@@ -46,9 +46,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         shell: powershell
         run: |
-          # Uses Conda libraries as pip libs give segfault on Windows with Brille
-          conda install euphonic scipy psutil pyyaml h5py requests
-          python -m pip install brille
+          python -m pip install requests psutil numpy==1.26.4 brille==0.7.0 euphonic[phonopy_reader]
           $pypath = (Get-Command python).Path
           echo "PYTHON_EX_PATH=$pypath" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
       - name: Set up Python environment (Linux)
