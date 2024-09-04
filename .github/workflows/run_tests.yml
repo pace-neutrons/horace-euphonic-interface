@@ -72,7 +72,7 @@ jobs:
         uses: matlab-actions/run-command@v2
         with:
           command: cd('test'); set_up_dependencies; run_tests('brille')
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.matlab_version == 'latest' }}
         with:
           directory: test
@@ -80,15 +80,15 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Upload toolbox
         if: ${{ always() && matrix.os == 'ubuntu-latest' && matrix.matlab_version == 'latest' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: horace_euphonic_interface.mltbx
           path: mltbx/horace_euphonic_interface.mltbx
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: Unit test results ${{ matrix.os }}
+          name: Unit_test-${{ matrix.os }}-matlab-${{ matrix.matlab_version }}-py${{ matrix.python_version }}
           path: test/junit_report*.xml
 
   publish-test-results:
@@ -97,7 +97,7 @@ jobs:
     if: success() || failure()
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: Publish test results
